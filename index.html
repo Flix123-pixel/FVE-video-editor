@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flix Video Editor</title>
+
+<style>
+:root{
+  --bg:#07070b;
+  --panel:#101017;
+  --panel2:#15151e;
+  --border:#272733;
+  --text:#f7f7fb;
+  --muted:#8d8d9d;
+  --purple:#8b5cf6;
+  --pink:#ec4899;
+  --blue:#3b82f6;
+  --cyan:#06b6d4;
+  --green:#22c55e;
+  --orange:#f97316;
+  --red:#ef4444;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  background:
+    radial-gradient(circle at 20% 0%,rgba(139,92,246,.13),transparent 30%),
+    radial-gradient(circle at 90% 20%,rgba(236,72,153,.10),transparent 25%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  height:100vh;
+  overflow:hidden;
+}
+
+/* APP */
+
+.app{
+  height:100vh;
+  display:grid;
+  grid-template-columns:74px 270px 1fr;
+  grid-template-rows:64px 1fr 270px;
+}
+
+/* TOP BAR */
+
+.topbar{
+  grid-column:1 / -1;
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  border-bottom:1px solid var(--border);
+  background:rgba(8,8,12,.85);
+  backdrop-filter:blur(18px);
+  z-index:20;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:-.5px;
+}
+
+.logo-icon{
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  box-shadow:0 0 25px rgba(139,92,246,.35);
+}
+
+.top-center{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.project-name{
+  color:#ddd;
+  font-weight:700;
+}
+
+.status{
+  padding:5px 10px;
+  border-radius:20px;
+  font-size:11px;
+  background:#17251c;
+  color:#5ee58b;
+}
+
+.top-actions{
+  display:flex;
+  gap:9px;
+  align-items:center;
+}
+
+.top-btn{
+  border:1px solid var(--border);
+  background:#14141c;
+  color:#eee;
+  padding:9px 13px;
+  border-radius:9px;
+  cursor:pointer;
+}
+
+.top-btn:hover{
+  border-color:#555568;
+}
+
+.export{
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  border:0;
+  font-weight:800;
+}
+
+/* LEFT NAV */
+
+.nav{
+  grid-row:2 / 4;
+  background:#0b0b11;
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:12px 7px;
+  gap:7px;
+}
+
+.nav-item{
+  width:58px;
+  height:58px;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  color:#8c8c9b;
+  cursor:pointer;
+  font-size:9px;
+  transition:.2s;
+}
+
+.nav-item span{
+  font-size:19px;
+}
+
+.nav-item:hover,
+.nav-item.active{
+  color:white;
+  background:linear-gradient(135deg,rgba(139,92,246,.25),rgba(236,72,153,.12));
+}
+
+.nav-item.active{
+  box-shadow:inset 2px 0 var(--purple);
+}
+
+/* TOOL PANEL */
+
+.tools{
+  grid-row:2;
+  background:rgba(12,12,18,.9);
+  border-right:1px solid var(--border);
+  overflow:auto;
+  padding:18px 14px;
+}
+
+.tools::-webkit-scrollbar,
+.inspector::-webkit-scrollbar{
+  width:5px;
+}
+
+.tools::-webkit-scrollbar-thumb,
+.inspector::-webkit-scrollbar-thumb{
+  background:#30303c;
+  border-radius:10px;
+}
+
+.panel-title{
+  font-size:17px;
+  font-weight:800;
+  margin-bottom:4px;
+}
+
+.panel-subtitle{
+  color:var(--muted);
+  font-size:11px;
+  margin-bottom:16px;
+}
+
+.search{
+  width:100%;
+  background:#171720;
+  border:1px solid var(--border);
+  color:white;
+  padding:10px 12px;
+  border-radius:9px;
+  outline:none;
+  margin-bottom:14px;
+}
+
+.tool-section{
+  margin-bottom:20px;
+}
+
+.section-title{
+  color:#777788;
+  font-size:10px;
+  text-transform:uppercase;
+  font-weight:800;
+  letter-spacing:1px;
+  margin-bottom:8px;
+}
+
+.tool-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.tool{
+  min-height:70px;
+  border:1px solid var(--border);
+  background:#15151e;
+  border-radius:10px;
+  padding:9px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.tool:hover{
+  transform:translateY(-2px);
+  border-color:#53536a;
+  background:#1a1a26;
+}
+
+.tool-icon{
+  font-size:19px;
+  margin-bottom:5px;
+}
+
+.tool-name{
+  font-size:11px;
+  font-weight:700;
+}
+
+.tool-desc{
+  color:#707080;
+  font-size:9px;
+  margin-top:2px;
+}
+
+.ai{
+  border-color:rgba(139,92,246,.4);
+  background:linear-gradient(135deg,rgba(139,92,246,.13),rgba(236,72,153,.05));
+}
+
+/* WORKSPACE */
+
+.workspace{
+  grid-column:3;
+  grid-row:2;
+  display:grid;
+  grid-template-columns:1fr 270px;
+  min-width:0;
+  min-height:0;
+}
+
+.preview-area{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  background:
+    radial-gradient(circle at center,rgba(80,80,110,.12),transparent 45%),
+    #09090e;
+}
+
+.preview{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:35px;
+}
+
+.video-frame{
+  width:min(760px,90%);
+  aspect-ratio:16/9;
+  background:
+    linear-gradient(135deg,#18182b,#08080d);
+  border:1px solid #323242;
+  border-radius:8px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 25px 80px rgba(0,0,0,.6);
+}
+
+.video-content{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(139,92,246,.28),transparent 35%),
+    radial-gradient(circle at 80% 70%,rgba(236,72,153,.25),transparent 35%);
+}
+
+.video-content h1{
+  font-size:clamp(28px,5vw,70px);
+  font-weight:1000;
+  letter-spacing:-4px;
+  background:linear-gradient(90deg,#fff,#b89aff,#ff75bb);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+.video-content p{
+  color:#bbb;
+  margin-top:10px;
+}
+
+.preview-controls{
+  height:58px;
+  border-top:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:13px;
+}
+
+.control{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:#171720;
+  border:1px solid var(--border);
+  color:white;
+  cursor:pointer;
+}
+
+.play{
+  width:44px;
+  height:44px;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  border:0;
+}
+
+/* INSPECTOR */
+
+.inspector{
+  border-left:1px solid var(--border);
+  background:#0d0d14;
+  overflow:auto;
+  padding:16px;
+}
+
+.inspector h3{
+  font-size:14px;
+  margin-bottom:15px;
+}
+
+.inspector-section{
+  border-bottom:1px solid var(--border);
+  padding-bottom:15px;
+  margin-bottom:15px;
+}
+
+.label{
+  color:#8c8c9c;
+  font-size:10px;
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+
+.range{
+  width:100%;
+  accent-color:var(--purple);
+}
+
+.row{
+  display:flex;
+  gap:8px;
+  margin-top:9px;
+}
+
+.input{
+  flex:1;
+  background:#171720;
+  border:1px solid var(--border);
+  border-radius:7px;
+  color:white;
+  padding:8px;
+}
+
+.small-btn{
+  background:#181821;
+  border:1px solid var(--border);
+  color:white;
+  border-radius:7px;
+  padding:7px 10px;
+  cursor:pointer;
+}
+
+/* TIMELINE */
+
+.timeline{
+  grid-column:2 / -1;
+  grid-row:3;
+  background:#0b0b11;
+  border-top:1px solid var(--border);
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.timeline-head{
+  height:42px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 12px;
+}
+
+.timeline-head button{
+  background:#16161f;
+  color:#ddd;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:5px 9px;
+  cursor:pointer;
+}
+
+.timeline-body{
+  flex:1;
+  display:flex;
+  overflow:auto;
+}
+
+.track-labels{
+  width:90px;
+  flex-shrink:0;
+  background:#0e0e15;
+  border-right:1px solid var(--border);
+}
+
+.track-label{
+  height:57px;
+  border-bottom:1px solid #20202a;
+  display:flex;
+  align-items:center;
+  padding-left:12px;
+  color:#888895;
+  font-size:10px;
+}
+
+.tracks{
+  position:relative;
+  min-width:900px;
+  flex:1;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 79px,
+      rgba(255,255,255,.04) 80px
+    );
+}
+
+.ruler{
+  height:28px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+}
+
+.ruler div{
+  width:80px;
+  flex-shrink:0;
+  color:#686875;
+  font-size:9px;
+  padding:7px 5px;
+}
+
+.track{
+  height:57px;
+  border-bottom:1px solid #20202a;
+  position:relative;
+}
+
+.clip{
+  position:absolute;
+  top:6px;
+  height:44px;
+  border-radius:6px;
+  padding:6px 8px;
+  font-size:10px;
+  font-weight:700;
+  overflow:hidden;
+  cursor:pointer;
+  color:white;
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.clip.video{
+  background:linear-gradient(135deg,#5b35b8,#7c3aed);
+}
+
+.clip.audio{
+  background:linear-gradient(135deg,#075985,#0891b2);
+}
+
+.clip.text{
+  background:linear-gradient(135deg,#9d174d,#db2777);
+}
+
+.clip.fx{
+  background:linear-gradient(135deg,#9a3412,#f97316);
+}
+
+.playhead{
+  position:absolute;
+  top:28px;
+  bottom:0;
+  width:2px;
+  background:#ff3860;
+  left:410px;
+  z-index:5;
+}
+
+.playhead::before{
+  content:"";
+  position:absolute;
+  top:-5px;
+  left:-5px;
+  width:12px;
+  height:12px;
+  background:#ff3860;
+  transform:rotate(45deg);
+}
+
+/* MODAL */
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(8px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:100;
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-box{
+  width:min(620px,92%);
+  max-height:85vh;
+  overflow:auto;
+  background:#111119;
+  border:1px solid #343444;
+  border-radius:18px;
+  padding:24px;
+  box-shadow:0 30px 100px #000;
+}
+
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.close{
+  background:#1c1c25;
+  color:white;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:7px 10px;
+  cursor:pointer;
+}
+
+textarea,
+select{
+  width:100%;
+  background:#181821;
+  border:1px solid var(--border);
+  color:white;
+  border-radius:9px;
+  padding:12px;
+  outline:none;
+  margin-bottom:12px;
+}
+
+.primary{
+  width:100%;
+  padding:12px;
+  border:0;
+  border-radius:9px;
+  color:white;
+  font-weight:800;
+  cursor:pointer;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+}
+
+/* NOTIFICATION */
+
+.toast{
+  position:fixed;
+  bottom:25px;
+  right:25px;
+  background:#191922;
+  border:1px solid #383845;
+  padding:12px 16px;
+  border-radius:10px;
+  transform:translateY(100px);
+  opacity:0;
+  transition:.3s;
+  z-index:200;
+  box-shadow:0 15px 50px #000;
+}
+
+.toast.show{
+  transform:translateY(0);
+  opacity:1;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1000px){
+  .app{
+    grid-template-columns:65px 220px 1fr;
+  }
+
+  .workspace{
+    grid-template-columns:1fr;
+  }
+
+  .inspector{
+    display:none;
+  }
+}
+
+@media(max-width:700px){
+  body{
+    overflow:auto;
+  }
+
+  .app{
+    min-width:800px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- TOP BAR -->
+<header class="topbar">
+
+  <div class="logo">
+    <div class="logo-icon">▶</div>
+    FLIX
+  </div>
+
+  <div class="top-center">
+    <span class="project-name">My YouTube Video</span>
+    <span class="status">● Saved</span>
+  </div>
+
+  <div class="top-actions">
+    <button class="top-btn" onclick="showToast('Project saved')">↶</button>
+    <button class="top-btn" onclick="showToast('Redo')">↷</button>
+    <button class="top-btn" onclick="showToast('Preview mode enabled')">◉ Preview</button>
+    <button class="top-btn export" onclick="exportVideo()">Export</button>
+  </div>
+
+</header>
+
+
+<!-- LEFT NAV -->
+<nav class="nav">
+
+  <div class="nav-item active" onclick="selectNav(this)">
+    <span>✦</span>
+    AI
+  </div>
+
+  <div class="nav-item" onclick="selectNav(this)">
+    <span>▣</span>
+    Media
+  </div>
+
+  <div class="nav-item" onclick="selectNav(this)">
+    <span>T</span>
+    Text
+  </div>
+
+  <div class="nav-item" onclick="selectNav(this)">
+    <span>♪</span>
+    Audio
+  </div>
+
+  <div class="nav-item" onclick="selectNav(this)">
+    <span>◈</span>
+    Effects
+  </div>
+
+  <div class="nav-item" onclick="selectNav(this)">
+    <span>↝</span>
+    Trans.
+  </div>
+
+  <div class="nav-item" onclick="selectNav(this)">
+    <span>☷</span>
+    Captions
+  </div>
+
+  <div class="nav-item" onclick="selectNav(this)">
+    <span>⚙</span>
+    Settings
+  </div>
+
+</nav>
+
+
+<!-- TOOLS -->
+<aside class="tools">
+
+  <div class="panel-title">Creator Studio</div>
+  <div class="panel-subtitle">Everything you need to create viral videos.</div>
+
+  <input
+    class="search"
+    id="toolSearch"
+    placeholder="⌕ Search tools..."
+    oninput="filterTools()"
+  >
+
+  <!-- AI -->
+  <div class="tool-section">
+
+    <div class="section-title">AI Magic</div>
+
+    <div class="tool-grid">
+
+      <div class="tool ai" data-name="ai cut" onclick="runAI('AI Cut')">
+        <div class="tool-icon">✂️</div>
+        <div class="tool-name">AI Cut</div>
+        <div class="tool-desc">Find highlights</div>
+      </div>
+
+      <div class="tool ai" data-name="auto captions" onclick="runAI('Auto Captions')">
+        <div class="tool-icon">💬</div>
+        <div class="tool-name">Auto Captions</div>
+        <div class="tool-desc">Instant subtitles</div>
+      </div>
+
+      <div class="tool ai" data-name="ai enhance" onclick="runAI('AI Enhance')">
+        <div class="tool-icon">✨</div>
+        <div class="tool-name">AI Enhance</div>
+        <div class="tool-desc">Upscale video</div>
+      </div>
+
+      <div class="tool ai" data-name="remove background" onclick="runAI('Background Removal')">
+        <div class="tool-icon">🪄</div>
+        <div class="tool-name">Remove BG</div>
+        <div class="tool-desc">One click</div>
+      </div>
+
+      <div class="tool ai" data-name="object remove" onclick="runAI('Object Remover')">
+        <div class="tool-icon">🧹</div>
+        <div class="tool-name">Object Remove</div>
+        <div class="tool-desc">Erase anything</div>
+      </div>
+
+      <div class="tool ai" data-name="ai effects" onclick="runAI('AI Effects')">
+        <div class="tool-icon">🤯</div>
+        <div class="tool-name">AI Effects</div>
+        <div class="tool-desc">Crazy effects</div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- AUDIO -->
+  <div class="tool-section">
+
+    <div class="section-title">AI Audio</div>
+
+    <div class="tool-grid">
+
+      <div class="tool" data-name="text to speech" onclick="openModal('tts')">
+        <div class="tool-icon">🗣️</div>
+        <div class="tool-name">Text → Speech</div>
+        <div class="tool-desc">AI voices</div>
+      </div>
+
+      <div class="tool" data-name="speech to text" onclick="runAI('Speech To Text')">
+        <div class="tool-icon">🎙️</div>
+        <div class="tool-name">Speech → Text</div>
+        <div class="tool-desc">Transcribe</div>
+      </div>
+
+      <div class="tool" data-name="voice enhance" onclick="runAI('Voice Enhance')">
+        <div class="tool-icon">🎧</div>
+        <div class="tool-name">Voice Enhance</div>
+        <div class="tool-desc">Studio sound</div>
+      </div>
+
+      <div class="tool" data-name="ai speech" onclick="openModal('speech')">
+        <div class="tool-icon">🤖</div>
+        <div class="tool-name">AI Speech</div>
+        <div class="tool-desc">Natural voices</div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- EDIT -->
+  <div class="tool-section">
+
+    <div class="section-title">Edit</div>
+
+    <div class="tool-grid">
+
+      <div class="tool" data-name="transitions" onclick="runAI('Transitions')">
+        <div class="tool-icon">⚡</div>
+        <div class="tool-name">Transitions</div>
+        <div class="tool-desc">50+ styles</div>
+      </div>
+
+      <div class="tool" data-name="effects" onclick="runAI('Effects')">
+        <div class="tool-icon">🔥</div>
+        <div class="tool-name">Effects</div>
+        <div class="tool-desc">Pro effects</div>
+      </div>
+
+      <div class="tool" data-name="filters" onclick="runAI('Filters')">
+        <div class="tool-icon">🎨</div>
+        <div class="tool-name">Filters</div>
+        <div class="tool-desc">Color styles</div>
+      </div>
+
+      <div class="tool" data-name="speed" onclick="runAI('Speed')">
+        <div class="tool-icon">⏩</div>
+        <div class="tool-name">Speed</div>
+        <div class="tool-desc">0.1x → 20x</div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- MEDIA -->
+  <div class="tool-section">
+
+    <div class="section-title">Media</div>
+
+    <div class="tool-grid">
+
+      <div class="tool" data-name="import video" onclick="document.getElementById('mediaInput').click()">
+        <div class="tool-icon">📁</div>
+        <div class="tool-name">Import</div>
+        <div class="tool-desc">Video / Photo</div>
+      </div>
+
+      <div class="tool" data-name="record" onclick="runAI('Camera')">
+        <div class="tool-icon">📹</div>
+        <div class="tool-name">Record</div>
+        <div class="tool-desc">Camera</div>
+      </div>
+
+    </div>
+
+  </div>
+
+</aside>
+
+
+<input
+  type="file"
+  id="mediaInput"
+  accept="video/*,image/*,audio/*"
+  multiple
+  hidden
+  onchange="importMedia(event)"
+>
+
+
+<!-- WORKSPACE -->
+<main class="workspace">
+
+  <section class="preview-area">
+
+    <div class="preview">
+
+      <div class="video-frame">
+
+        <div class="video-content" id="videoContent">
+
+          <div style="font-size:12px;color:#aaa;margin-bottom:12px">
+            FLIX VIDEO EDITOR
+          </div>
+
+          <h1>CREATE<br>WITHOUT LIMITS</h1>
+
+          <p>AI-powered editing for YouTube creators</p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="preview-controls">
+
+      <button class="control" onclick="showToast('Previous frame')">◀</button>
+
+      <button class="control" onclick="showToast('Frame backward')">◁</button>
+
+      <button class="control play" onclick="togglePlay(this)">▶</button>
+
+      <button class="control" onclick="showToast('Frame forward')">▷</button>
+
+      <button class="control" onclick="showToast('Next frame')">▶</button>
+
+      <span style="color:#777;font-size:11px;margin-left:15px">
+        00:00:08 / 00:04:32
+      </span>
+
+    </div>
+
+  </section>
+
+
+  <!-- INSPECTOR -->
+  <aside class="inspector">
+
+    <h3>Inspector</h3>
+
+    <div class="inspector-section">
+
+      <div class="label">Transform</div>
+
+      <div class="row">
+        <input class="input" placeholder="X" value="0">
+        <input class="input" placeholder="Y" value="0">
+      </div>
+
+      <div class="row">
+        <input class="input" placeholder="W" value="100">
+        <input class="input" placeholder="H" value="100">
+      </div>
+
+    </div>
+
+
+    <div class="inspector-section">
+
+      <div class="label">Opacity</div>
+
+      <input
+        class="range"
+        type="range"
+        min="0"
+        max="100"
+        value="100"
+      >
+
+    </div>
+
+
+    <div class="inspector-section">
+
+      <div class="label">Blur</div>
+
+      <input
+        class="range"
+        type="range"
+        min="0"
+        max="100"
+        value="0"
+      >
+
+    </div>
+
+
+    <div class="inspector-section">
+
+      <div class="label">Blend Mode</div>
+
+      <select>
+        <option>Normal</option>
+        <option>Screen</option>
+        <option>Overlay</option>
+        <option>Multiply</option>
+        <option>Color Dodge</option>
+      </select>
+
+    </div>
+
+
+    <div class="inspector-section">
+
+      <div class="label">AI Quick Actions</div>
+
+      <div class="row">
+        <button class="small-btn" onclick="runAI('Enhance')">✨ Enhance</button>
+        <button class="small-btn" onclick="runAI('Remove BG')">🪄 Remove</button>
+      </div>
+
+    </div>
+
+  </aside>
+
+</main>
+
+
+<!-- TIMELINE -->
+
+<section class="timeline">
+
+  <div class="timeline-head">
+
+    <button onclick="runAI('Split')">✂ Split</button>
+    <button onclick="runAI('Delete')">Delete</button>
+    <button onclick="runAI('Duplicate')">Duplicate</button>
+    <button onclick="runAI('Snap')">🧲 Snap</button>
+    <button onclick="runAI('AI Edit')">✨ AI Edit</button>
+
+    <span style="margin-left:auto;color:#777;font-size:10px">
+      4K • 60 FPS
+    </span>
+
+  </div>
+
+
+  <div class="timeline-body">
+
+    <div class="track-labels">
+
+      <div class="track-label">VIDEO 01</div>
+      <div class="track-label">OVERLAY</div>
+      <div class="track-label">TEXT</div>
+      <div class="track-label">AUDIO</div>
+
+    </div>
+
+
+    <div class="tracks">
+
+      <div class="ruler">
+        <div>00:00</div>
+        <div>00:05</div>
+        <div>00:10</div>
+        <div>00:15</div>
+        <div>00:20</div>
+        <div>00:25</div>
+        <div>00:30</div>
+        <div>00:35</div>
+        <div>00:40</div>
+      </div>
+
+
+      <div class="track">
+
+        <div
+          class="clip video"
+          style="left:20px;width:300px"
+        >
+          🎬 Main Video
+        </div>
+
+        <div
+          class="clip video"
+          style="left:330px;width:220px"
+        >
+          🎬 B-Roll
+        </div>
+
+        <div
+          class="clip video"
+          style="left:560px;width:290px"
+        >
+          🎬 Outro
+        </div>
+
+      </div>
+
+
+      <div class="track">
+
+        <div
+          class="clip fx"
+          style="left:140px;width:190px"
+        >
+          ✨ AI EFFECT
+        </div>
+
+        <div
+          class="clip fx"
+          style="left:520px;width:150px"
+        >
+          🔥 FLASH
+        </div>
+
+      </div>
+
+
+      <div class="track">
+
+        <div
+          class="clip text"
+          style="left:80px;width:260px"
+        >
+          T  SUBSCRIBE NOW!
+        </div>
+
+        <div
+          class="clip text"
+          style="left:450px;width:200px"
+        >
+          T  NEW VIDEO
+        </div>
+
+      </div>
+
+
+      <div class="track">
+
+        <div
+          class="clip audio"
+          style="left:20px;width:720px"
+        >
+          🎵 Voiceover • Enhanced • AI Noise Removal
+        </div>
+
+      </div>
+
+
+      <div class="playhead"></div>
+
+    </div>
+
+  </div>
+
+</section>
+
+</div>
+
+
+<!-- TTS MODAL -->
+
+<div class="modal" id="ttsModal">
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+      <h2>🗣️ Text to Speech</h2>
+      <button class="close" onclick="closeModal('ttsModal')">✕</button>
+    </div>
+
+    <textarea
+      id="ttsText"
+      rows="7"
+      placeholder="Write your script here..."
+    >Welcome to Flix Video Editor — create amazing videos faster with AI.</textarea>
+
+    <select id="voiceSelect">
+      <option>Flix — Natural Male</option>
+      <option>Flix — Natural Female</option>
+      <option>Flix — Energetic Creator</option>
+      <option>Flix — Deep Voice</option>
+      <option>Flix — Storyteller</option>
+    </select>
+
+    <button class="primary" onclick="generateSpeech()">
+      ✨ Generate AI Voice
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- AI SPEECH MODAL -->
+
+<div class="modal" id="speechModal">
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+      <h2>🤖 AI Speech Studio</h2>
+      <button class="close" onclick="closeModal('speechModal')">✕</button>
+    </div>
+
+    <textarea
+      rows="6"
+      placeholder="Enter what you want your AI narrator to say..."
+    ></textarea>
+
+    <select>
+      <option>Energetic YouTuber</option>
+      <option>Cinematic</option>
+      <option>News Presenter</option>
+      <option>Gaming Creator</option>
+      <option>Documentary</option>
+    </select>
+
+    <button class="primary" onclick="generateSpeech()">
+      Generate Speech
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- TOAST -->
+
+<div class="toast" id="toast">
+  Done!
+</div>
+
+
+<script>
+
+/* TOAST */
+
+function showToast(message){
+
+  const toast = document.getElementById("toast");
+
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  setTimeout(()=>{
+    toast.classList.remove("show");
+  },2200);
+}
+
+
+/* NAV */
+
+function selectNav(element){
+
+  document.querySelectorAll(".nav-item")
+    .forEach(item=>item.classList.remove("active"));
+
+  element.classList.add("active");
+
+}
+
+
+/* AI */
+
+function runAI(feature){
+
+  showToast("✨ " + feature + " activated");
+
+}
+
+
+/* MODALS */
+
+function openModal(type){
+
+  if(type === "tts"){
+    document.getElementById("ttsModal")
+      .classList.add("show");
+  }
+
+  if(type === "speech"){
+    document.getElementById("speechModal")
+      .classList.add("show");
+  }
+
+}
+
+function closeModal(id){
+
+  document.getElementById(id)
+    .classList.remove("show");
+
+}
+
+
+/* TEXT TO SPEECH */
+
+function generateSpeech(){
+
+  const text =
+    document.getElementById("ttsText")?.value ||
+    "AI speech generated.";
+
+  if("speechSynthesis" in window){
+
+    const speech = new SpeechSynthesisUtterance(text);
+
+    speech.rate = 1;
+    speech.pitch = 1;
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(speech);
+
+    showToast("🎙️ AI voice generated");
+
+  }else{
+
+    showToast("Speech synthesis is not supported");
+
+  }
+
+}
+
+
+/* PLAY */
+
+function togglePlay(button){
+
+  if(button.textContent === "▶"){
+
+    button.textContent = "Ⅱ";
+    showToast("▶ Playing preview");
+
+  }else{
+
+    button.textContent = "▶";
+    showToast("Preview paused");
+
+  }
+
+}
+
+
+/* SEARCH */
+
+function filterTools(){
+
+  const query =
+    document.getElementById("toolSearch")
+      .value.toLowerCase();
+
+  document.querySelectorAll(".tool")
+    .forEach(tool=>{
+
+      const name =
+        tool.dataset.name || "";
+
+      tool.style.display =
+        name.includes(query)
+        ? "block"
+        : "none";
+
+    });
+
+}
+
+
+/* IMPORT */
+
+function importMedia(event){
+
+  const files = event.target.files;
+
+  if(!files.length) return;
+
+  showToast(
+    "📁 " + files.length + " media file(s) imported"
+  );
+
+}
+
+
+/* EXPORT */
+
+function exportVideo(){
+
+  showToast(
+    "🚀 Export settings opened"
+  );
+
+}
+
+
+/* CLICK OUTSIDE MODAL */
+
+document.querySelectorAll(".modal")
+.forEach(modal=>{
+
+  modal.addEventListener("click",function(e){
+
+    if(e.target === modal){
+
+      modal.classList.remove("show");
+
+    }
+
+  });
+
+});
+
+
+/* KEYBOARD SHORTCUTS */
+
+document.addEventListener("keydown",function(e){
+
+  if(e.code === "Space" &&
+     document.activeElement.tagName !== "TEXTAREA" &&
+     document.activeElement.tagName !== "INPUT"){
+
+    e.preventDefault();
+
+    document.querySelector(".play")
+      .click();
+
+  }
+
+  if(e.ctrlKey && e.key === "s"){
+
+    e.preventDefault();
+
+    showToast("💾 Project saved");
+
+  }
+
+});
+
+</script>
+
+</body>
+</html>
