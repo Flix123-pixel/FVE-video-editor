@@ -3,182 +3,229 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>CreatorCut Studio</title>
+  <title>CreatorCut Studio Pro</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: #0f0f12; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    body { background: #0c0c0e; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
     
-    /* Top Bar */
-    header { height: 48px; background: #1a1a1e; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #27272a; }
-    .logo { font-size: 1rem; font-weight: 700; color: #ff3366; }
-    .btn { background: #ff3366; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; }
+    /* Top Header */
+    header { height: 50px; background: #18181b; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #27272a; }
+    .logo { font-size: 1.1rem; font-weight: 700; color: #ff3366; }
+    .btn { background: #ff3366; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; }
+    .btn:active { opacity: 0.8; }
     .btn-secondary { background: #27272a; }
+    .btn-record { background: #10b981; }
 
-    /* Canvas / Preview */
+    /* Preview Canvas Area */
     .preview-box { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; position: relative; }
-    canvas { max-width: 95%; max-height: 95%; aspect-ratio: 16/9; background: #18181b; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.8); }
+    canvas { max-width: 95%; max-height: 95%; aspect-ratio: 9/16; background: #18181b; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.7); }
 
-    /* Controls Panel */
-    .controls-panel { background: #18181b; border-top: 1px solid #27272a; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
-    .control-row { display: flex; gap: 10px; overflow-x: auto; align-items: center; }
-    .control-row label { font-size: 11px; text-transform: uppercase; color: #a1a1aa; white-space: nowrap; }
-    input, select { background: #27272a; color: white; border: 1px solid #3f3f46; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
+    /* Control Workspace Tabs */
+    .controls-panel { background: #18181b; border-top: 1px solid #27272a; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 45vh; overflow-y: auto; }
+    .control-row { display: flex; gap: 8px; align-items: center; overflow-x: auto; white-space: nowrap; }
+    .control-row label { font-size: 11px; text-transform: uppercase; color: #a1a1aa; font-weight: 600; }
+    input[type="range"] { flex: 1; accent-color: #ff3366; }
+    input[type="text"], select { background: #27272a; color: white; border: 1px solid #3f3f46; border-radius: 4px; padding: 6px 10px; font-size: 12px; }
 
-    /* Multi-Track Timeline */
-    .timeline { height: 160px; background: #121214; border-top: 1px solid #27272a; padding: 8px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-    .track { height: 38px; background: #1e1e24; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; font-size: 11px; color: #a1a1aa; position: relative; border-left: 4px solid #ff3366; }
-    .track.audio-track { border-left-color: #3b82f6; }
-    .track.text-track { border-left-color: #10b981; }
+    /* Multi-Track Sequencer */
+    .timeline { height: 130px; background: #121214; border-top: 1px solid #27272a; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .track { height: 32px; background: #1e1e24; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; font-size: 11px; color: #a1a1aa; position: relative; border-left: 4px solid #ff3366; }
+    .track.captions-track { border-left-color: #3b82f6; }
     .playhead { position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #ff3366; }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="logo">CreatorCut Mobile</div>
+    <div class="logo">CreatorCut Pro</div>
     <div style="display: flex; gap: 8px;">
-      <button class="btn btn-secondary" onclick="togglePlay()">Play/Pause</button>
-      <button class="btn" onclick="alert('Export ready. For full MP4 encoding on mobile, link FFmpeg.wasm.')">Export</button>
+      <button class="btn btn-secondary" onclick="togglePlay()">Play</button>
+      <button class="btn btn-record" id="exportBtn" onclick="exportEditedVideo()">Render & Save</button>
     </div>
   </header>
 
-  <!-- Video Preview Canvas -->
+  <!-- Live Output Canvas -->
   <div class="preview-box">
-    <canvas id="viewport" width="1280" height="720"></canvas>
+    <canvas id="viewport" width="720" height="1280"></canvas>
   </div>
 
-  <!-- Interactive Controls -->
+  <!-- Realtime Controls Panel -->
   <div class="controls-panel">
+    <!-- Media & Format Inputs -->
     <div class="control-row">
       <label>Clip:</label>
       <input type="file" id="videoLoader" accept="video/*" />
-      <label>Music:</label>
-      <input type="file" id="audioLoader" accept="audio/*" />
-    </div>
-
-    <div class="control-row">
-      <label>Text Overlay:</label>
-      <input type="text" id="overlayText" placeholder="Add text / subtitle" oninput="drawFrame()" />
       <label>Ratio:</label>
       <select id="aspect" onchange="setAspect(this.value)">
-        <option value="16/9">16:9 (Landscape)</option>
-        <option value="9/16">9:16 (Shorts/Reels)</option>
+        <option value="9/16">9:16 (Shorts / Reels)</option>
+        <option value="16/9">16:9 (YouTube Landscape)</option>
         <option value="1/1">1:1 (Square)</option>
       </select>
     </div>
 
+    <!-- AI Auto-Caption Suite -->
     <div class="control-row">
-      <label>Brightness:</label>
-      <input type="range" id="brightness" min="50" max="150" value="100" oninput="drawFrame()" />
-      <label>Contrast:</label>
-      <input type="range" id="contrast" min="50" max="150" value="100" oninput="drawFrame()" />
-      <label>Speed:</label>
-      <select id="speed" onchange="setSpeed(this.value)">
-        <option value="1">1x</option>
-        <option value="1.25">1.25x</option>
-        <option value="1.5">1.5x</option>
-        <option value="2">2x</option>
-      </select>
+      <label>Auto-Captions:</label>
+      <button class="btn btn-secondary" style="font-size:11px;" onclick="startAutoCaptions()">🎙️ Generate from Voice</button>
+      <input type="text" id="captionText" placeholder="Subtitles appear here..." oninput="drawFrame()" />
+    </div>
+
+    <!-- HSL Color Grading -->
+    <div class="control-row">
+      <label>Hue:</label>
+      <input type="range" id="hue" min="0" max="360" value="0" oninput="drawFrame()" />
+      <label>Saturation:</label>
+      <input type="range" id="sat" min="0" max="250" value="100" oninput="drawFrame()" />
+      <label>Lightness:</label>
+      <input type="range" id="light" min="50" max="150" value="100" oninput="drawFrame()" />
     </div>
   </div>
 
-  <!-- Multi-Track Sequencer -->
+  <!-- Multi-Track View -->
   <div class="timeline">
     <div class="track" id="videoTrack">
       <div class="playhead" id="playhead"></div>
-      <span id="videoTrackLabel">Video Track: No file loaded</span>
+      <span id="videoLabel">Video Track: Select a clip</span>
     </div>
-    <div class="track audio-track">
-      <span id="audioTrackLabel">Audio Track: No background music</span>
-    </div>
-    <div class="track text-track">
-      <span id="textTrackLabel">Overlay Track: Ready</span>
+    <div class="track captions-track">
+      <span id="captionLabel">Subtitles Track: Web Speech API Ready</span>
     </div>
   </div>
 
-  <!-- Hidden Processing Elements -->
-  <video id="rawVideo" playsinline style="display:none;"></video>
-  <audio id="rawAudio" style="display:none;"></audio>
+  <!-- Media Engine -->
+  <video id="rawVideo" playsinline crossOrigin="anonymous" style="display:none;"></video>
 
   <script>
     const canvas = document.getElementById('viewport');
     const ctx = canvas.getContext('2d');
     const video = document.getElementById('rawVideo');
-    const audio = document.getElementById('rawAudio');
     const playhead = document.getElementById('playhead');
+    const captionInput = document.getElementById('captionText');
+    const exportBtn = document.getElementById('exportBtn');
 
+    // Load Local Video
     document.getElementById('videoLoader').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
         video.src = URL.createObjectURL(file);
-        document.getElementById('videoTrackLabel').innerText = `Video: ${file.name}`;
-        video.load();
+        document.getElementById('videoLabel').innerText = `Clip: ${file.name}`;
+        video.onloadeddata = () => {
+          video.currentTime = 0;
+          drawFrame();
+        };
       }
     });
 
-    document.getElementById('audioLoader').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        audio.src = URL.createObjectURL(file);
-        document.getElementById('audioTrackLabel').innerText = `Audio: ${file.name}`;
-        audio.load();
-      }
-    });
-
+    // Playback Toggle
     function togglePlay() {
       if (video.paused) {
         video.play();
-        if (audio.src) audio.play();
         renderLoop();
       } else {
         video.pause();
-        if (audio.src) audio.pause();
       }
     }
 
-    function setSpeed(rate) {
-      video.playbackRate = parseFloat(rate);
-      audio.playbackRate = parseFloat(rate);
-    }
-
+    // Aspect Ratio Adjuster
     function setAspect(ratio) {
       canvas.style.aspectRatio = ratio;
       if (ratio === '9/16') { canvas.width = 720; canvas.height = 1280; }
-      else if (ratio === '1/1') { canvas.width = 1080; canvas.height = 1080; }
-      else { canvas.width = 1280; canvas.height = 720; }
+      else if (ratio === '16/9') { canvas.width = 1280; canvas.height = 720; }
+      else { canvas.width = 1080; canvas.height = 1080; }
       drawFrame();
+    }
+
+    // Canvas Graphics Loop & HSL Processing
+    function drawFrame() {
+      const h = document.getElementById('hue').value;
+      const s = document.getElementById('sat').value;
+      const l = document.getElementById('light').value;
+
+      // Apply HSL Filters
+      ctx.filter = `hue-rotate(${h}deg) saturate(${s}%) brightness(${l}%)`;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx.filter = 'none';
+
+      // Draw Auto-Captions / Subtitles with Stroke
+      const text = captionInput.value;
+      if (text) {
+        ctx.font = '900 42px -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#000000';
+        ctx.strokeText(text, canvas.width / 2, canvas.height - 120);
+        ctx.fillStyle = '#ffdf00'; // Viral yellow subtitle font
+        ctx.fillText(text, canvas.width / 2, canvas.height - 120);
+      }
     }
 
     function renderLoop() {
       if (!video.paused && !video.ended) {
         drawFrame();
-        updateTimeline();
+        const progress = (video.currentTime / video.duration) * 100;
+        playhead.style.left = `${progress || 0}%`;
         requestAnimationFrame(renderLoop);
       }
     }
 
-    function drawFrame() {
-      const b = document.getElementById('brightness').value;
-      const c = document.getElementById('contrast').value;
-      const text = document.getElementById('overlayText').value;
-
-      ctx.filter = `brightness(${b}%) contrast(${c}%)`;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      ctx.filter = 'none';
-
-      if (text) {
-        ctx.font = 'bold 36px sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.shadowColor = 'rgba(0,0,0,0.8)';
-        ctx.shadowBlur = 8;
-        ctx.fillText(text, canvas.width / 2, canvas.height - 80);
+    // Built-in AI Auto-Speech Recognition for Captions
+    function startAutoCaptions() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech Recognition is not supported by your browser engine. Please type captions manually.");
+        return;
       }
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0])
+          .map(result => result.transcript)
+          .join('');
+        captionInput.value = transcript;
+        document.getElementById('captionLabel').innerText = `Live: ${transcript}`;
+        drawFrame();
+      };
+      recognition.start();
+      alert("Microphone listening... Speak into the phone to generate instant captions.");
     }
 
-    function updateTimeline() {
-      const progress = (video.currentTime / video.duration) * 100;
-      playhead.style.left = `${progress || 0}%`;
+    // Working Video Exporter (No external server needed)
+    function exportEditedVideo() {
+      if (!video.src) {
+        alert("Please load a video clip first.");
+        return;
+      }
+
+      exportBtn.innerText = "Rendering...";
+      exportBtn.style.background = "#eab308";
+      video.currentTime = 0;
+      video.play();
+
+      const stream = canvas.captureStream(30);
+      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      const chunks = [];
+
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/mp4' });
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `CreatorCut_${Date.now()}.mp4`;
+        a.click();
+        exportBtn.innerText = "Render & Save";
+        exportBtn.style.background = "#10b981";
+      };
+
+      recorder.start();
+      renderLoop();
+
+      video.onended = () => {
+        recorder.stop();
+      };
     }
   </script>
 </body>
