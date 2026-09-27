@@ -7,8 +7,8 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: #0c0c0e; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-    
-    /* Header */
+
+    /* Top Bar */
     header { height: 48px; background: #18181b; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #27272a; flex-shrink: 0; }
     .logo { font-size: 1rem; font-weight: 700; color: #ff3366; }
     .btn { background: #ff3366; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; }
@@ -16,30 +16,36 @@
     .btn-secondary { background: #27272a; }
     .btn-save { background: #10b981; }
 
-    /* Preview Canvas Area */
+    /* Video Workspace Viewport */
     .preview-box { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; position: relative; }
     canvas { max-width: 95%; max-height: 95%; aspect-ratio: 9/16; background: #18181b; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.8); }
 
-    /* Control Workspace */
+    /* Overlay Center Play Button */
+    #bigPlayBtn { position: absolute; width: 64px; height: 64px; background: rgba(0,0,0,0.65); border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 24px; }
+
+    /* Controls Workspace */
     .controls-panel { background: #18181b; border-top: 1px solid #27272a; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; max-height: 44vh; overflow-y: auto; flex-shrink: 0; }
     .control-row { display: flex; gap: 8px; align-items: center; overflow-x: auto; white-space: nowrap; }
     .control-row label { font-size: 11px; text-transform: uppercase; color: #a1a1aa; font-weight: 600; }
     input[type="range"] { flex: 1; accent-color: #ff3366; min-width: 80px; }
     input[type="text"], input[type="number"], select { background: #27272a; color: white; border: 1px solid #3f3f46; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
 
-    /* Multi-Track Timeline */
-    .timeline { height: 100px; background: #121214; border-top: 1px solid #27272a; padding: 6px 12px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+    /* Timeline Tracker */
+    .timeline { height: 95px; background: #121214; border-top: 1px solid #27272a; padding: 6px 12px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
     .track { height: 26px; background: #1e1e24; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; font-size: 11px; color: #a1a1aa; position: relative; border-left: 4px solid #ff3366; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .track.music-track { border-left-color: #eab308; }
     .track.captions-track { border-left-color: #3b82f6; }
-    .playhead { position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #ff3366; }
+    .playhead { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #ff3366; }
 
-    /* Exporting Progress Modal */
+    /* Export Modal */
     #exportModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
     .modal-content { background: #1c1c22; border: 1px solid #2e2e38; border-radius: 12px; padding: 24px; width: 90%; max-width: 380px; text-align: center; }
     .progress-bar-bg { width: 100%; height: 12px; background: #27272a; border-radius: 6px; overflow: hidden; margin: 16px 0 8px 0; }
-    .progress-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ff3366, #ff758c); transition: width 0.1s linear; }
+    .progress-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ff3366, #ff758c); }
     .stat-text { font-size: 13px; color: #a1a1aa; margin-top: 4px; font-family: monospace; }
+
+    /* Fix: Native video kept in rendering tree with opacity 0 so Chrome decodes every frame */
+    #rawVideo { position: absolute; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; }
   </style>
 </head>
 <body>
@@ -52,22 +58,25 @@
     </div>
   </header>
 
+  <!-- Video Preview Canvas -->
   <div class="preview-box">
+    <div id="bigPlayBtn" onclick="togglePlay()">▶</div>
     <canvas id="viewport" width="720" height="1280"></canvas>
+    <!-- Hardware decoder element -->
+    <video id="rawVideo" playsinline webkit-playsinline crossOrigin="anonymous"></video>
   </div>
 
+  <!-- Realtime Controls -->
   <div class="controls-panel">
-    <!-- Media Loaders -->
     <div class="control-row">
       <label>Clip:</label>
       <input type="file" id="videoLoader" accept="video/*" />
       <label>Music:</label>
       <input type="file" id="musicLoader" accept="audio/*" />
-      <label>Logo/Watermark:</label>
+      <label>Watermark:</label>
       <input type="file" id="stickerLoader" accept="image/*" />
     </div>
 
-    <!-- Trimming & Speed Controls -->
     <div class="control-row">
       <label>Cut Start (s):</label>
       <input type="number" id="trimStart" value="0" min="0" step="0.5" style="width: 55px;" onchange="updateTrim()" />
@@ -75,14 +84,13 @@
       <input type="number" id="trimEnd" value="0" min="0" step="0.5" style="width: 55px;" onchange="updateTrim()" />
       <label>Speed:</label>
       <select id="speed" onchange="setSpeed(this.value)">
-        <option value="1">1x Normal</option>
-        <option value="1.5">1.5x Fast</option>
-        <option value="2">2x Speedy</option>
-        <option value="0.5">0.5x Slow-mo</option>
+        <option value="1">1x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+        <option value="0.5">0.5x Slow</option>
       </select>
     </div>
 
-    <!-- Aspect Ratio, Rotation & Zoom -->
     <div class="control-row">
       <label>Ratio:</label>
       <select id="aspect" onchange="setAspect(this.value)">
@@ -101,14 +109,12 @@
       <input type="range" id="zoom" min="1" max="2" step="0.05" value="1" oninput="drawFrame()" />
     </div>
 
-    <!-- AI Auto Captions & Custom Text -->
     <div class="control-row">
       <label>Subtitles:</label>
       <button class="btn btn-secondary" style="font-size:11px;" onclick="startSpeechRecognition()">🎙️ Auto Captions</button>
       <input type="text" id="captionText" placeholder="Subtitles appear here..." oninput="drawFrame()" />
     </div>
 
-    <!-- HSL & Color Grading Suite -->
     <div class="control-row">
       <label>Hue:</label>
       <input type="range" id="hue" min="0" max="360" value="0" oninput="drawFrame()" />
@@ -129,11 +135,11 @@
       <span id="musicLabel">BGM: No track loaded</span>
     </div>
     <div class="track captions-track">
-      <span id="captionLabel">Text: No overlay</span>
+      <span id="captionLabel">Text: Ready</span>
     </div>
   </div>
 
-  <!-- Realtime Exporting Modal & Time Meter -->
+  <!-- Export Modal -->
   <div id="exportModal">
     <div class="modal-content">
       <h3>Exporting Video...</h3>
@@ -146,8 +152,6 @@
     </div>
   </div>
 
-  <!-- Hidden Media Processing Tags -->
-  <video id="rawVideo" playsinline crossOrigin="anonymous" style="display:none;"></video>
   <audio id="rawAudio" playsinline crossOrigin="anonymous" style="display:none;"></audio>
 
   <script>
@@ -157,23 +161,29 @@
     const audio = document.getElementById('rawAudio');
     const playhead = document.getElementById('playhead');
     const captionInput = document.getElementById('captionText');
+    const bigPlayBtn = document.getElementById('bigPlayBtn');
 
     let stickerImg = null;
     let exportStartTime = 0;
     let isExporting = false;
 
-    // Load Local Video
+    // Load Local Video & Trigger Initial Preview Render
     document.getElementById('videoLoader').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
         video.src = URL.createObjectURL(file);
         document.getElementById('videoLabel').innerText = `Clip: ${file.name}`;
-        video.onloadedmetadata = () => {
-          document.getElementById('trimEnd').value = Math.floor(video.duration);
-          video.currentTime = 0;
-          drawFrame();
-        };
+        video.load();
       }
+    });
+
+    video.addEventListener('loadeddata', () => {
+      document.getElementById('trimEnd').value = Math.floor(video.duration);
+      video.currentTime = 0.01; // Tiny seek forces mobile Chrome to display the first frame
+    });
+
+    video.addEventListener('seeked', () => {
+      drawFrame();
     });
 
     // Load Music
@@ -185,7 +195,7 @@
       }
     });
 
-    // Load Watermark / Sticker
+    // Load Watermark
     document.getElementById('stickerLoader').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -196,13 +206,22 @@
     });
 
     function togglePlay() {
+      if (!video.src) return;
+
       if (video.paused) {
-        video.play();
-        if (audio.src) audio.play();
-        renderLoop();
+        video.play().then(() => {
+          if (audio.src) audio.play();
+          bigPlayBtn.style.display = 'none';
+          renderLoop();
+        }).catch(err => {
+          console.warn("Autoplay bypass:", err);
+          video.muted = true;
+          video.play();
+        });
       } else {
         video.pause();
         if (audio.src) audio.pause();
+        bigPlayBtn.style.display = 'flex';
       }
     }
 
@@ -232,6 +251,7 @@
       if (video.currentTime >= end) {
         video.pause();
         if (audio.src) audio.pause();
+        bigPlayBtn.style.display = 'flex';
         return;
       }
 
@@ -244,6 +264,7 @@
       }
     }
 
+    // Direct Canvas Frame Renderer
     function drawFrame() {
       const h = document.getElementById('hue').value;
       const s = document.getElementById('sat').value;
@@ -259,11 +280,13 @@
       ctx.scale(zoom, zoom);
 
       ctx.filter = `hue-rotate(${h}deg) saturate(${s}%)`;
-      ctx.drawImage(video, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+      if (video.readyState >= 1) {
+        ctx.drawImage(video, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+      }
       ctx.filter = 'none';
       ctx.restore();
 
-      // Vignette effect
+      // Vignette
       if (vig > 0) {
         const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.width/4, canvas.width/2, canvas.height/2, canvas.width/1.2);
         gradient.addColorStop(0, 'rgba(0,0,0,0)');
@@ -272,7 +295,7 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // Sticker overlay
+      // Watermark Overlay
       if (stickerImg) {
         ctx.drawImage(stickerImg, canvas.width - 160, 40, 120, 120);
       }
@@ -293,7 +316,7 @@
     function startSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech Recognition is not supported by your current browser. You can type captions in the box.");
+        alert("Speech Recognition not supported on this browser. Type in the box.");
         return;
       }
       const rec = new SpeechRecognition();
@@ -308,69 +331,57 @@
       rec.start();
     }
 
-    // High-Compatibility Mobile Video Exporter
+    // Video Exporter with Progress Meter
     async function startExport() {
-      if (!video.src) {
+      if (!video.src || isNaN(video.duration)) {
         alert("Please load a video clip first.");
         return;
       }
 
       isExporting = true;
+      video.pause();
+      if (audio.src) audio.pause();
+      bigPlayBtn.style.display = 'none';
+
       const modal = document.getElementById('exportModal');
       const progressFill = document.getElementById('progressFill');
       const progressPercent = document.getElementById('progressPercent');
       const progressEta = document.getElementById('progressEta');
 
       modal.style.display = 'flex';
+      progressFill.style.width = '1%';
+      progressPercent.innerText = '1%';
+      progressEta.innerText = 'Starting render...';
+
       exportStartTime = Date.now();
 
       const start = parseFloat(document.getElementById('trimStart').value) || 0;
       const end = parseFloat(document.getElementById('trimEnd').value) || video.duration;
-      const totalDuration = end - start;
+      const totalDuration = Math.max(0.1, end - start);
 
-      // Prepare video without triggering browser autoplay lock
-      video.pause();
-      video.muted = true;
       video.currentTime = start;
-
-      await new Promise(resolve => {
-        video.onseeked = resolve;
+      await new Promise(r => {
+        const onSeek = () => { video.removeEventListener('seeked', onSeek); r(); };
+        video.addEventListener('seeked', onSeek);
+        setTimeout(r, 500);
       });
+      drawFrame();
 
-      const canvasStream = canvas.captureStream(30);
-
-      // Safe audio mixing
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') {
-          await audioCtx.resume();
+      const stream = canvas.captureStream(30);
+      let selectedMime = 'video/webm';
+      const possibleTypes = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp8', 'video/webm'];
+      for (const t of possibleTypes) {
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) {
+          selectedMime = t;
+          break;
         }
-        const dest = audioCtx.createMediaStreamDestination();
-
-        if (audio.src) {
-          const musicSource = audioCtx.createMediaElementSource(audio);
-          musicSource.connect(dest);
-          audio.currentTime = 0;
-          audio.play().catch(() => {});
-        }
-
-        if (dest.stream.getAudioTracks().length > 0) {
-          dest.stream.getAudioTracks().forEach(t => canvasStream.addTrack(t));
-        }
-      } catch (err) {
-        console.warn("Audio bypass active for mobile:", err);
-      }
-
-      let mime = 'video/webm';
-      if (!MediaRecorder.isTypeSupported(mime)) {
-        mime = 'video/mp4';
       }
 
       let recorder;
       try {
-        recorder = new MediaRecorder(canvasStream, { mimeType: mime });
-      } catch (e) {
-        recorder = new MediaRecorder(canvasStream);
+        recorder = new MediaRecorder(stream, { mimeType: selectedMime });
+      } catch (err) {
+        recorder = new MediaRecorder(stream);
       }
 
       const chunks = [];
@@ -379,55 +390,58 @@
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/mp4' });
+        const isMp4 = selectedMime.includes('mp4');
+        const blob = new Blob(chunks, { type: isMp4 ? 'video/mp4' : 'video/webm' });
+        const ext = isMp4 ? 'mp4' : 'webm';
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `CreatorCut_${Date.now()}.mp4`;
+        a.download = `CreatorCut_${Date.now()}.${ext}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
 
         modal.style.display = 'none';
-        video.muted = false;
         isExporting = false;
-        alert("Export Complete! Saved to your device Downloads.");
+        bigPlayBtn.style.display = 'flex';
+        video.currentTime = start;
+        drawFrame();
+        alert("Export Complete! Check your phone Downloads.");
       };
 
-      recorder.start(500);
+      recorder.start(100);
 
+      video.muted = true;
       try {
         await video.play();
-      } catch (err) {
-        video.muted = true;
-        await video.play();
+      } catch (e) {
+        // Continue
       }
 
-      function processExport() {
+      const checkInterval = setInterval(() => {
         if (video.currentTime >= end || video.ended) {
+          clearInterval(checkInterval);
           video.pause();
-          if (audio.src) audio.pause();
-          recorder.stop();
+          progressFill.style.width = '100%';
+          progressPercent.innerText = '100%';
+          progressEta.innerText = 'Finalizing file...';
+          setTimeout(() => recorder.stop(), 500);
           return;
         }
 
         drawFrame();
 
-        const elapsed = Math.max(0, video.currentTime - start);
-        const pct = Math.min(99, Math.max(1, (elapsed / totalDuration) * 100));
+        const currentElapsed = Math.max(0, video.currentTime - start);
+        const pct = Math.min(99, Math.max(1, (currentElapsed / totalDuration) * 100));
 
         progressFill.style.width = `${pct.toFixed(0)}%`;
         progressPercent.innerText = `${pct.toFixed(0)}%`;
 
-        const realTimeElapsed = (Date.now() - exportStartTime) / 1000;
-        const estimatedTotal = (realTimeElapsed / (pct / 100));
-        const remaining = Math.max(1, estimatedTotal - realTimeElapsed);
-        progressEta.innerText = `ETA: ~${Math.ceil(remaining)}s remaining`;
-
-        requestAnimationFrame(processExport);
-      }
-
-      processExport();
+        const timeSpent = (Date.now() - exportStartTime) / 1000;
+        const estTotal = (timeSpent / (pct / 100));
+        const rem = Math.max(1, estTotal - timeSpent);
+        progressEta.innerText = `ETA: ~${Math.ceil(rem)}s remaining`;
+      }, 66);
     }
   </script>
 </body>
