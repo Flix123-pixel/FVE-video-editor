@@ -9,28 +9,29 @@
     body { background: #0c0c0e; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
     
     /* Header */
-    header { height: 48px; background: #18181b; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #27272a; }
+    header { height: 48px; background: #18181b; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #27272a; flex-shrink: 0; }
     .logo { font-size: 1rem; font-weight: 700; color: #ff3366; }
     .btn { background: #ff3366; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; }
+    .btn:active { opacity: 0.8; }
     .btn-secondary { background: #27272a; }
     .btn-save { background: #10b981; }
 
-    /* Preview Canvas */
+    /* Preview Canvas Area */
     .preview-box { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; position: relative; }
     canvas { max-width: 95%; max-height: 95%; aspect-ratio: 9/16; background: #18181b; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.8); }
 
     /* Control Workspace */
-    .controls-panel { background: #18181b; border-top: 1px solid #27272a; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; max-height: 48vh; overflow-y: auto; }
+    .controls-panel { background: #18181b; border-top: 1px solid #27272a; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; max-height: 44vh; overflow-y: auto; flex-shrink: 0; }
     .control-row { display: flex; gap: 8px; align-items: center; overflow-x: auto; white-space: nowrap; }
     .control-row label { font-size: 11px; text-transform: uppercase; color: #a1a1aa; font-weight: 600; }
-    input[type="range"] { flex: 1; accent-color: #ff3366; }
+    input[type="range"] { flex: 1; accent-color: #ff3366; min-width: 80px; }
     input[type="text"], input[type="number"], select { background: #27272a; color: white; border: 1px solid #3f3f46; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
 
     /* Multi-Track Timeline */
-    .timeline { height: 110px; background: #121214; border-top: 1px solid #27272a; padding: 6px 12px; display: flex; flex-direction: column; gap: 4px; }
-    .track { height: 28px; background: #1e1e24; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; font-size: 11px; color: #a1a1aa; position: relative; border-left: 4px solid #ff3366; }
-    .track.captions-track { border-left-color: #3b82f6; }
+    .timeline { height: 100px; background: #121214; border-top: 1px solid #27272a; padding: 6px 12px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+    .track { height: 26px; background: #1e1e24; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; font-size: 11px; color: #a1a1aa; position: relative; border-left: 4px solid #ff3366; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .track.music-track { border-left-color: #eab308; }
+    .track.captions-track { border-left-color: #3b82f6; }
     .playhead { position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #ff3366; }
 
     /* Exporting Progress Modal */
@@ -56,32 +57,32 @@
   </div>
 
   <div class="controls-panel">
-    <!-- Media Pickers -->
+    <!-- Media Loaders -->
     <div class="control-row">
       <label>Clip:</label>
       <input type="file" id="videoLoader" accept="video/*" />
       <label>Music:</label>
       <input type="file" id="musicLoader" accept="audio/*" />
-      <label>Logo/Sticker:</label>
+      <label>Logo/Watermark:</label>
       <input type="file" id="stickerLoader" accept="image/*" />
     </div>
 
-    <!-- Trimming (Cut & Split) -->
+    <!-- Trimming & Speed Controls -->
     <div class="control-row">
       <label>Cut Start (s):</label>
-      <input type="number" id="trimStart" value="0" min="0" step="0.5" style="width: 60px;" onchange="updateTrim()" />
+      <input type="number" id="trimStart" value="0" min="0" step="0.5" style="width: 55px;" onchange="updateTrim()" />
       <label>Cut End (s):</label>
-      <input type="number" id="trimEnd" value="0" min="0" step="0.5" style="width: 60px;" onchange="updateTrim()" />
+      <input type="number" id="trimEnd" value="0" min="0" step="0.5" style="width: 55px;" onchange="updateTrim()" />
       <label>Speed:</label>
       <select id="speed" onchange="setSpeed(this.value)">
-        <option value="1">1x</option>
-        <option value="1.5">1.5x</option>
-        <option value="2">2x</option>
+        <option value="1">1x Normal</option>
+        <option value="1.5">1.5x Fast</option>
+        <option value="2">2x Speedy</option>
         <option value="0.5">0.5x Slow-mo</option>
       </select>
     </div>
 
-    <!-- Aspect Ratio & Transform -->
+    <!-- Aspect Ratio, Rotation & Zoom -->
     <div class="control-row">
       <label>Ratio:</label>
       <select id="aspect" onchange="setAspect(this.value)">
@@ -100,14 +101,14 @@
       <input type="range" id="zoom" min="1" max="2" step="0.05" value="1" oninput="drawFrame()" />
     </div>
 
-    <!-- AI Captions -->
+    <!-- AI Auto Captions & Custom Text -->
     <div class="control-row">
       <label>Subtitles:</label>
       <button class="btn btn-secondary" style="font-size:11px;" onclick="startSpeechRecognition()">🎙️ Auto Captions</button>
-      <input type="text" id="captionText" placeholder="Text overlays..." oninput="drawFrame()" />
+      <input type="text" id="captionText" placeholder="Subtitles appear here..." oninput="drawFrame()" />
     </div>
 
-    <!-- HSL & Color Grading -->
+    <!-- HSL & Color Grading Suite -->
     <div class="control-row">
       <label>Hue:</label>
       <input type="range" id="hue" min="0" max="360" value="0" oninput="drawFrame()" />
@@ -136,7 +137,7 @@
   <div id="exportModal">
     <div class="modal-content">
       <h3>Exporting Video...</h3>
-      <p style="font-size: 12px; color: #a1a1aa; margin-top: 4px;">Rendering edits and packaging audio...</p>
+      <p style="font-size: 12px; color: #a1a1aa; margin-top: 4px;">Rendering edits and packaging file...</p>
       <div class="progress-bar-bg">
         <div class="progress-bar-fill" id="progressFill"></div>
       </div>
@@ -145,6 +146,7 @@
     </div>
   </div>
 
+  <!-- Hidden Media Processing Tags -->
   <video id="rawVideo" playsinline crossOrigin="anonymous" style="display:none;"></video>
   <audio id="rawAudio" playsinline crossOrigin="anonymous" style="display:none;"></audio>
 
@@ -158,6 +160,7 @@
 
     let stickerImg = null;
     let exportStartTime = 0;
+    let isExporting = false;
 
     // Load Local Video
     document.getElementById('videoLoader').addEventListener('change', (e) => {
@@ -173,7 +176,7 @@
       }
     });
 
-    // Load Music Track
+    // Load Music
     document.getElementById('musicLoader').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -182,7 +185,7 @@
       }
     });
 
-    // Load PNG Sticker / Watermark
+    // Load Watermark / Sticker
     document.getElementById('stickerLoader').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -223,6 +226,8 @@
     }
 
     function renderLoop() {
+      if (isExporting) return;
+
       const end = parseFloat(document.getElementById('trimEnd').value) || video.duration;
       if (video.currentTime >= end) {
         video.pause();
@@ -239,7 +244,6 @@
       }
     }
 
-    // Frame Compositor
     function drawFrame() {
       const h = document.getElementById('hue').value;
       const s = document.getElementById('sat').value;
@@ -250,18 +254,16 @@
       ctx.save();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Transformations: Zoom & Rotation
       ctx.translate(canvas.width / 2, canvas.height / 2);
       ctx.rotate((rot * Math.PI) / 180);
       ctx.scale(zoom, zoom);
 
-      // Color Engine
       ctx.filter = `hue-rotate(${h}deg) saturate(${s}%)`;
       ctx.drawImage(video, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
       ctx.filter = 'none';
       ctx.restore();
 
-      // Vignette Effect
+      // Vignette effect
       if (vig > 0) {
         const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.width/4, canvas.width/2, canvas.height/2, canvas.width/1.2);
         gradient.addColorStop(0, 'rgba(0,0,0,0)');
@@ -270,15 +272,15 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // Sticker / Watermark
+      // Sticker overlay
       if (stickerImg) {
         ctx.drawImage(stickerImg, canvas.width - 160, 40, 120, 120);
       }
 
-      // Auto-Captions with Stroke
+      // Subtitles
       const text = captionInput.value;
       if (text) {
-        ctx.font = '900 40px sans-serif';
+        ctx.font = '900 40px -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.lineWidth = 6;
         ctx.strokeStyle = '#000000';
@@ -288,11 +290,10 @@
       }
     }
 
-    // Web Speech API
     function startSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech Recognition not supported in this browser. Type text directly.");
+        alert("Speech Recognition is not supported by your current browser. You can type captions in the box.");
         return;
       }
       const rec = new SpeechRecognition();
@@ -307,13 +308,14 @@
       rec.start();
     }
 
-    // Exporting with Progress Meter and Audio Mixing
-    function startExport() {
+    // High-Compatibility Mobile Video Exporter
+    async function startExport() {
       if (!video.src) {
         alert("Please load a video clip first.");
         return;
       }
 
+      isExporting = true;
       const modal = document.getElementById('exportModal');
       const progressFill = document.getElementById('progressFill');
       const progressPercent = document.getElementById('progressPercent');
@@ -326,48 +328,82 @@
       const end = parseFloat(document.getElementById('trimEnd').value) || video.duration;
       const totalDuration = end - start;
 
+      // Prepare video without triggering browser autoplay lock
+      video.pause();
+      video.muted = true;
       video.currentTime = start;
-      if (audio.src) audio.currentTime = 0;
 
-      // Audio Mixing via Web Audio Context
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const dest = audioCtx.createMediaStreamDestination();
-
-      if (video.captureStream || video.mozCaptureStream) {
-        const videoStream = (video.captureStream || video.mozCaptureStream)();
-        if (videoStream.getAudioTracks().length > 0) {
-          const sourceNode = audioCtx.createMediaElementSource(video);
-          sourceNode.connect(dest);
-        }
-      }
-
-      if (audio.src) {
-        const musicSource = audioCtx.createMediaElementSource(audio);
-        musicSource.connect(dest);
-      }
+      await new Promise(resolve => {
+        video.onseeked = resolve;
+      });
 
       const canvasStream = canvas.captureStream(30);
-      dest.stream.getAudioTracks().forEach(track => canvasStream.addTrack(track));
 
-      const recorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' });
+      // Safe audio mixing
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') {
+          await audioCtx.resume();
+        }
+        const dest = audioCtx.createMediaStreamDestination();
+
+        if (audio.src) {
+          const musicSource = audioCtx.createMediaElementSource(audio);
+          musicSource.connect(dest);
+          audio.currentTime = 0;
+          audio.play().catch(() => {});
+        }
+
+        if (dest.stream.getAudioTracks().length > 0) {
+          dest.stream.getAudioTracks().forEach(t => canvasStream.addTrack(t));
+        }
+      } catch (err) {
+        console.warn("Audio bypass active for mobile:", err);
+      }
+
+      let mime = 'video/webm';
+      if (!MediaRecorder.isTypeSupported(mime)) {
+        mime = 'video/mp4';
+      }
+
+      let recorder;
+      try {
+        recorder = new MediaRecorder(canvasStream, { mimeType: mime });
+      } catch (e) {
+        recorder = new MediaRecorder(canvasStream);
+      }
+
       const chunks = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
 
-      recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/mp4' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `CreatorCut_${Date.now()}.mp4`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
+
         modal.style.display = 'none';
+        video.muted = false;
+        isExporting = false;
+        alert("Export Complete! Saved to your device Downloads.");
       };
 
-      recorder.start();
-      video.play();
-      if (audio.src) audio.play();
+      recorder.start(500);
 
-      function trackExportProgress() {
+      try {
+        await video.play();
+      } catch (err) {
+        video.muted = true;
+        await video.play();
+      }
+
+      function processExport() {
         if (video.currentTime >= end || video.ended) {
           video.pause();
           if (audio.src) audio.pause();
@@ -377,23 +413,22 @@
 
         drawFrame();
 
-        // Meter Calculations
-        const elapsedVideo = video.currentTime - start;
-        const pct = Math.min(100, Math.max(0, (elapsedVideo / totalDuration) * 100));
+        const elapsed = Math.max(0, video.currentTime - start);
+        const pct = Math.min(99, Math.max(1, (elapsed / totalDuration) * 100));
+
         progressFill.style.width = `${pct.toFixed(0)}%`;
         progressPercent.innerText = `${pct.toFixed(0)}%`;
 
         const realTimeElapsed = (Date.now() - exportStartTime) / 1000;
         const estimatedTotal = (realTimeElapsed / (pct / 100));
-        const remaining = Math.max(0, estimatedTotal - realTimeElapsed);
-        progressEta.innerText = `ETA: ${remaining.toFixed(0)}s remaining`;
+        const remaining = Math.max(1, estimatedTotal - realTimeElapsed);
+        progressEta.innerText = `ETA: ~${Math.ceil(remaining)}s remaining`;
 
-        requestAnimationFrame(trackExportProgress);
+        requestAnimationFrame(processExport);
       }
 
-      trackExportProgress();
+      processExport();
     }
   </script>
 </body>
 </html>
- 3
