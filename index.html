@@ -1,334 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>FVE Video Editor</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>CreatorCut Studio</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #0f0f12; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    /* Top Bar */
+    header { height: 48px; background: #1a1a1e; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #27272a; }
+    .logo { font-size: 1rem; font-weight: 700; color: #ff3366; }
+    .btn { background: #ff3366; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; }
+    .btn-secondary { background: #27272a; }
 
-<style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{
-  margin:0;width:100%;height:100%;overflow:hidden;
-  background:#08090d;color:#fff;font-family:Arial,sans-serif
-}
-button,input{font:inherit}
-button{border:0;color:white}
-.app{height:100%;display:flex;flex-direction:column}
+    /* Canvas / Preview */
+    .preview-box { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; position: relative; }
+    canvas { max-width: 95%; max-height: 95%; aspect-ratio: 16/9; background: #18181b; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.8); }
 
-/* HEADER */
-.header{
-  height:58px;min-height:58px;background:#11131a;
-  border-bottom:1px solid #292c35;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 10px
-}
-.logo{font-size:20px;font-weight:900}
-.logo span{color:#00d9ff}
-.headerBtns{display:flex;gap:6px}
-.hbtn{
-  height:38px;min-width:38px;padding:0 10px;
-  border-radius:9px;background:#20232c
-}
-.export{
-  background:#00d9ff;color:#001014;font-weight:800
-}
+    /* Controls Panel */
+    .controls-panel { background: #18181b; border-top: 1px solid #27272a; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .control-row { display: flex; gap: 10px; overflow-x: auto; align-items: center; }
+    .control-row label { font-size: 11px; text-transform: uppercase; color: #a1a1aa; white-space: nowrap; }
+    input, select { background: #27272a; color: white; border: 1px solid #3f3f46; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
 
-/* PREVIEW */
-.preview{
-  flex:1;min-height:0;background:#050506;
-  display:flex;align-items:center;justify-content:center;
-  position:relative;padding:10px
-}
-.stage{
-  position:relative;
-  width:min(94vw,720px);
-  height:min(58vh,500px);
-  background:#000;
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;border-radius:8px
-}
-video{
-  width:100%;height:100%;object-fit:contain;
-  display:none;background:#000
-}
-.empty{
-  display:flex;flex-direction:column;align-items:center;
-  gap:12px;color:#888;text-align:center
-}
-.emptyIcon{font-size:48px}
-.importMain{
-  background:#00d9ff;color:#001014;
-  padding:12px 20px;border-radius:10px;font-weight:bold
-}
-#overlay{
-  position:absolute;left:0;right:0;top:0;bottom:0;
-  display:flex;align-items:center;justify-content:center;
-  pointer-events:none;padding:20px;text-align:center;
-  font-weight:900;font-size:30px;text-shadow:2px 2px 5px #000;
-  white-space:pre-wrap;word-break:break-word
-}
-
-/* PLAYER */
-.player{
-  height:50px;min-height:50px;background:#11131a;
-  display:flex;align-items:center;gap:8px;padding:5px 9px
-}
-.play{
-  width:38px;height:38px;border-radius:50%;
-  background:#00d9ff;color:#001014;font-weight:bold
-}
-.seek{flex:1;accent-color:#00d9ff}
-.clock{font-size:11px;color:#aaa;min-width:78px;text-align:right}
-
-/* TIMELINE */
-.timeline{
-  height:130px;min-height:130px;
-  background:#0d0f14;border-top:1px solid #282b34;
-  padding:8px
-}
-.timelineTop{
-  display:flex;justify-content:space-between;
-  align-items:center;margin-bottom:7px
-}
-.timelineTitle{font-weight:bold;font-size:13px}
-.timelineBtns{display:flex;gap:5px}
-.small{
-  background:#20232c;border-radius:7px;
-  padding:6px 9px;font-size:11px
-}
-.track{
-  height:57px;border-radius:8px;background:#050609;
-  border:1px solid #292c35;position:relative;overflow:hidden
-}
-.clip{
-  position:absolute;left:0;top:6px;bottom:6px;
-  width:100%;border-radius:6px;
-  background:linear-gradient(90deg,#12343c,#1d515d,#12343c);
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;color:#b9f5ff
-}
-.head{
-  position:absolute;top:0;bottom:0;width:2px;
-  background:#00eaff;left:0;z-index:5
-}
-
-/* TOOLS */
-.tools{
-  height:108px;min-height:108px;background:#11131a;
-  border-top:1px solid #292c35;display:flex;
-  gap:7px;padding:8px;overflow-x:auto
-}
-.tools::-webkit-scrollbar{display:none}
-.tool{
-  min-width:67px;height:82px;background:#1b1e27;
-  border-radius:10px;display:flex;
-  flex-direction:column;align-items:center;
-  justify-content:center;gap:7px;font-size:10px
-}
-.tool b{font-size:22px}
-.tool:active{transform:scale(.95)}
-.tool.active{background:#12323a;color:#00e5ff}
-
-/* PANEL */
-.panel{
-  position:fixed;z-index:20;left:0;right:0;bottom:108px;
-  max-height:55%;background:#171920;
-  border-top:1px solid #343741;border-radius:16px 16px 0 0;
-  padding:14px;transform:translateY(110%);
-  transition:.2s;overflow:auto
-}
-.panel.open{transform:translateY(0)}
-.panelHead{
-  display:flex;align-items:center;
-  justify-content:space-between;margin-bottom:12px
-}
-.panelHead h3{margin:0;font-size:16px}
-.close{
-  width:32px;height:32px;border-radius:8px;
-  background:#282b34
-}
-.row{
-  display:flex;gap:8px;overflow-x:auto;
-  padding-bottom:4px
-}
-.option{
-  min-width:70px;padding:11px 8px;
-  border-radius:9px;background:#252832;text-align:center;
-  font-size:11px
-}
-.option.active{outline:2px solid #00d9ff}
-.control{margin:12px 0}
-.control label{
-  display:flex;justify-content:space-between;
-  font-size:12px;color:#ccc;margin-bottom:6px
-}
-input[type=range]{width:100%;accent-color:#00d9ff}
-.textInput{
-  width:100%;padding:12px;border-radius:9px;
-  border:1px solid #333743;background:#0b0d12;
-  color:#fff;outline:none
-}
-.action{
-  width:100%;padding:12px;margin-top:7px;
-  border-radius:9px;background:#00d9ff;
-  color:#001014;font-weight:bold
-}
-
-/* MODAL */
-.modal{
-  display:none;position:fixed;inset:0;z-index:100;
-  background:#000b;align-items:flex-end
-}
-.modal.show{display:flex}
-.modalBox{
-  width:100%;background:#171920;padding:18px;
-  border-radius:18px 18px 0 0
-}
-.progress{
-  height:8px;background:#30333b;border-radius:10px;
-  overflow:hidden;margin:15px 0
-}
-.progress div{height:100%;width:0;background:#00d9ff}
-.status{font-size:12px;color:#aaa}
-</style>
+    /* Multi-Track Timeline */
+    .timeline { height: 160px; background: #121214; border-top: 1px solid #27272a; padding: 8px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+    .track { height: 38px; background: #1e1e24; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; font-size: 11px; color: #a1a1aa; position: relative; border-left: 4px solid #ff3366; }
+    .track.audio-track { border-left-color: #3b82f6; }
+    .track.text-track { border-left-color: #10b981; }
+    .playhead { position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #ff3366; }
+  </style>
 </head>
-
 <body>
 
-<div class="app">
+  <header>
+    <div class="logo">CreatorCut Mobile</div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-secondary" onclick="togglePlay()">Play/Pause</button>
+      <button class="btn" onclick="alert('Export ready. For full MP4 encoding on mobile, link FFmpeg.wasm.')">Export</button>
+    </div>
+  </header>
 
-<header class="header">
-  <div class="logo">FVE <span>Video Editor</span></div>
-
-  <div class="headerBtns">
-    <button class="hbtn" id="undo">↶</button>
-    <button class="hbtn" id="redo">↷</button>
-    <button class="hbtn" id="newProject">＋</button>
-    <button class="hbtn export" id="export">Export</button>
+  <!-- Video Preview Canvas -->
+  <div class="preview-box">
+    <canvas id="viewport" width="1280" height="720"></canvas>
   </div>
-</header>
 
-<main class="preview">
-
-  <div class="stage" id="stage">
-
-    <video id="video" playsinline></video>
-
-    <div class="empty" id="empty">
-      <div class="emptyIcon">🎬</div>
-      <div>Import a video to start editing</div>
-      <button class="importMain" id="importButton">
-        📂 Import Video
-      </button>
+  <!-- Interactive Controls -->
+  <div class="controls-panel">
+    <div class="control-row">
+      <label>Clip:</label>
+      <input type="file" id="videoLoader" accept="video/*" />
+      <label>Music:</label>
+      <input type="file" id="audioLoader" accept="audio/*" />
     </div>
 
-    <div id="overlay"></div>
+    <div class="control-row">
+      <label>Text Overlay:</label>
+      <input type="text" id="overlayText" placeholder="Add text / subtitle" oninput="drawFrame()" />
+      <label>Ratio:</label>
+      <select id="aspect" onchange="setAspect(this.value)">
+        <option value="16/9">16:9 (Landscape)</option>
+        <option value="9/16">9:16 (Shorts/Reels)</option>
+        <option value="1/1">1:1 (Square)</option>
+      </select>
+    </div>
 
-  </div>
-
-</main>
-
-<div class="player">
-  <button class="play" id="play">▶</button>
-
-  <input
-    class="seek"
-    id="seek"
-    type="range"
-    min="0"
-    max="100"
-    value="0"
-  >
-
-  <div class="clock" id="clock">00:00 / 00:00</div>
-</div>
-
-<section class="timeline">
-
-  <div class="timelineTop">
-    <div class="timelineTitle">TIMELINE</div>
-
-    <div class="timelineBtns">
-      <button class="small" id="fullscreen">⛶</button>
-      <button class="small" id="fit">Fit</button>
+    <div class="control-row">
+      <label>Brightness:</label>
+      <input type="range" id="brightness" min="50" max="150" value="100" oninput="drawFrame()" />
+      <label>Contrast:</label>
+      <input type="range" id="contrast" min="50" max="150" value="100" oninput="drawFrame()" />
+      <label>Speed:</label>
+      <select id="speed" onchange="setSpeed(this.value)">
+        <option value="1">1x</option>
+        <option value="1.25">1.25x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
     </div>
   </div>
 
-  <div class="track">
-    <div class="clip" id="clip">Import video</div>
-    <div class="head" id="head"></div>
+  <!-- Multi-Track Sequencer -->
+  <div class="timeline">
+    <div class="track" id="videoTrack">
+      <div class="playhead" id="playhead"></div>
+      <span id="videoTrackLabel">Video Track: No file loaded</span>
+    </div>
+    <div class="track audio-track">
+      <span id="audioTrackLabel">Audio Track: No background music</span>
+    </div>
+    <div class="track text-track">
+      <span id="textTrackLabel">Overlay Track: Ready</span>
+    </div>
   </div>
 
-</section>
+  <!-- Hidden Processing Elements -->
+  <video id="rawVideo" playsinline style="display:none;"></video>
+  <audio id="rawAudio" style="display:none;"></audio>
 
-<nav class="tools">
+  <script>
+    const canvas = document.getElementById('viewport');
+    const ctx = canvas.getContext('2d');
+    const video = document.getElementById('rawVideo');
+    const audio = document.getElementById('rawAudio');
+    const playhead = document.getElementById('playhead');
 
-  <button class="tool" data-tool="media">
-    <b>＋</b>Media
-  </button>
+    document.getElementById('videoLoader').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        video.src = URL.createObjectURL(file);
+        document.getElementById('videoTrackLabel').innerText = `Video: ${file.name}`;
+        video.load();
+      }
+    });
 
-  <button class="tool" data-tool="trim">
-    <b>✂</b>Trim
-  </button>
+    document.getElementById('audioLoader').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        audio.src = URL.createObjectURL(file);
+        document.getElementById('audioTrackLabel').innerText = `Audio: ${file.name}`;
+        audio.load();
+      }
+    });
 
-  <button class="tool" data-tool="audio">
-    <b>🔊</b>Audio
-  </button>
+    function togglePlay() {
+      if (video.paused) {
+        video.play();
+        if (audio.src) audio.play();
+        renderLoop();
+      } else {
+        video.pause();
+        if (audio.src) audio.pause();
+      }
+    }
 
-  <button class="tool" data-tool="text">
-    <b>T</b>Text
-  </button>
+    function setSpeed(rate) {
+      video.playbackRate = parseFloat(rate);
+      audio.playbackRate = parseFloat(rate);
+    }
 
-  <button class="tool" data-tool="filter">
-    <b>◐</b>Filters
-  </button>
+    function setAspect(ratio) {
+      canvas.style.aspectRatio = ratio;
+      if (ratio === '9/16') { canvas.width = 720; canvas.height = 1280; }
+      else if (ratio === '1/1') { canvas.width = 1080; canvas.height = 1080; }
+      else { canvas.width = 1280; canvas.height = 720; }
+      drawFrame();
+    }
 
-  <button class="tool" data-tool="adjust">
-    <b>☼</b>Adjust
-  </button>
+    function renderLoop() {
+      if (!video.paused && !video.ended) {
+        drawFrame();
+        updateTimeline();
+        requestAnimationFrame(renderLoop);
+      }
+    }
 
-  <button class="tool" data-tool="speed">
-    <b>⚡</b>Speed
-  </button>
+    function drawFrame() {
+      const b = document.getElementById('brightness').value;
+      const c = document.getElementById('contrast').value;
+      const text = document.getElementById('overlayText').value;
 
-  <button class="tool" data-tool="ratio">
-    <b>▣</b>Ratio
-  </button>
+      ctx.filter = `brightness(${b}%) contrast(${c}%)`;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx.filter = 'none';
 
-  <button class="tool" data-tool="rotate">
-    <b>⟳</b>Rotate
-  </button>
+      if (text) {
+        ctx.font = 'bold 36px sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 8;
+        ctx.fillText(text, canvas.width / 2, canvas.height - 80);
+      }
+    }
 
-  <button class="tool" data-tool="sticker">
-    <b>😊</b>Sticker
-  </button>
-
-  <button class="tool" data-tool="caption">
-    <b>CC</b>Caption
-  </button>
-
-</nav>
-
-</div>
-
-<div class="panel" id="panel">
-
-  <div class="panelHead">
-    <h3 id="panelTitle">Tool</h3>
-    <button class="close" id="closePanel">×</button>
-  </div>
-
-  <div id="panelContent"></div>
-
-</div>
-
-<input
-  type="file"
-  id="file"
-  accept="video/*"
-  hidden
->
-
-<div class="modal" id="exportModal">
-
-  <div class="
+    function updateTimeline() {
+      const progress = (video.currentTime / video.duration) * 100;
+      playhead.style.left = `${progress || 0}%`;
+    }
+  </script>
+</body>
+</html>
