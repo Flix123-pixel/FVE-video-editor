@@ -219,8 +219,18 @@
       </div>
     </div>
 
-    <!-- TAB 5: CREATIVE FX & CHROMA KEY -->
+    <!-- TAB 5: CREATIVE FX & CHROMA KEY & TRANSITIONS -->
     <div class="tab-content" id="effectsTab">
+      <div class="control-row">
+        <label>Transitions:</label>
+        <select id="transitionType" onchange="drawFrame()">
+          <option value="none">None</option>
+          <option value="fade">Fade In/Out</option>
+          <option value="flash">White Flash</option>
+        </select>
+        <label>Speed:</label>
+        <input type="range" id="transDuration" min="0.2" max="2" step="0.1" value="0.8" oninput="drawFrame()" />
+      </div>
       <div class="control-row">
         <label>Chroma (Green Screen):</label>
         <input type="checkbox" id="chromaToggle" onchange="drawFrame()" />
@@ -318,12 +328,12 @@
 
     function transcribeLoadedAudio() {
       if (!audioLoopback.src) {
-        alert("Pehle Audio Tab mein jakar Audio File upload karein!");
+        alert("Please load an audio file in the Audio tab first!");
         return;
       }
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech Recognition browser mein support nahi karta. Text tab mein manually likh sakte hain.");
+        alert("Speech Recognition not supported in this browser. Please type manually.");
         return;
       }
 
@@ -476,232 +486,4 @@
       }
       if (!video.paused && !video.ended) {
         drawFrame();
-        const start = parseFloat(document.getElementById('trimStart').value) || 0;
-        const progress = ((video.currentTime - start) / (end - start)) * 100;
-        playhead.style.left = `${Math.max(0, Math.min(progress, 100))}%`;
-        requestAnimationFrame(renderLoop);
-      }
-    }
-
-    function drawFrame() {
-      const h = document.getElementById('hue').value;
-      const s = document.getElementById('sat').value;
-      const l = document.getElementById('light').value;
-      const rot = parseInt(document.getElementById('rotateAngle').value);
-      const zoom = parseFloat(document.getElementById('zoom').value);
-      const vig = parseInt(document.getElementById('vignette').value);
-      const isChroma = document.getElementById('chromaToggle').checked;
-      const chromaTol = parseFloat(document.getElementById('chromaTolerance').value);
-      const isBlurBg = document.getElementById('blurBgToggle').checked;
-      const glitch = parseInt(document.getElementById('glitchVal').value);
-      const noise = parseInt(document.getElementById('noiseVal').value);
-
-      ctx.save();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (isBlurBg && video.readyState >= 1) {
-        ctx.save();
-        ctx.filter = 'blur(20px) brightness(0.6)';
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        ctx.restore();
-      }
-
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate((rot * Math.PI) / 180);
-      ctx.scale(isMirrored ? -zoom : zoom, zoom);
-
-      ctx.filter = `hue-rotate(${h}deg) saturate(${s}%) brightness(${l}%)`;
-      if (video.readyState >= 1) {
-        ctx.drawImage(video, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
-      }
-      ctx.filter = 'none';
-      ctx.restore();
-
-      if (glitch > 0 && video.readyState >= 1) {
-        ctx.save();
-        ctx.globalCompositeOperation = "screen";
-        ctx.drawImage(canvas, glitch, 0);
-        ctx.drawImage(canvas, -glitch, 0);
-        ctx.globalCompositeOperation = "source-over";
-        ctx.restore();
-      }
-
-      if (isChroma) {
-        const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const len = frame.data.length / 4;
-        for (let i = 0; i < len; i++) {
-          const r = frame.data[i * 4 + 0];
-          const g = frame.data[i * 4 + 1];
-          const b = frame.data[i * 4 + 2];
-          if (g > 90 && g > r * chromaTol && g > b * chromaTol) {
-            frame.data[i * 4 + 3] = 0;
-          }
-        }
-        ctx.putImageData(frame, 0, 0);
-      }
-
-      if (noise > 0) {
-        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < imgData.data.length; i += 4) {
-          const n = (Math.random() - 0.5) * noise;
-          imgData.data[i] += n;
-          imgData.data[i+1] += n;
-          imgData.data[i+2] += n;
-        }
-        ctx.putImageData(imgData, 0, 0);
-      }
-
-      if (vig > 0) {
-        const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.width/4, canvas.width/2, canvas.height/2, canvas.width/1.2);
-        grad.addColorStop(0, 'rgba(0,0,0,0)');
-        grad.addColorStop(1, `rgba(0,0,0,${vig / 100})`);
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-
-      if (stickerImg) {
-        const sc = parseInt(document.getElementById('stickerScale').value);
-        const posX = (canvas.width * parseInt(document.getElementById('stickerX').value)) / 100;
-        const posY = (canvas.height * parseInt(document.getElementById('stickerY').value)) / 100;
-        ctx.drawImage(stickerImg, posX, posY, sc, sc);
-      }
-
-      const text = captionInput.value;
-      if (text) {
-        const fontFam = document.getElementById('fontFamily').value;
-        const fontSize = document.getElementById('fontSize').value;
-        const textColor = document.getElementById('captionColor').value;
-        const strokeColor = document.getElementById('strokeColor').value;
-        const posY = parseInt(document.getElementById('captionY').value);
-        const tagBox = document.getElementById('tagBoxToggle').checked;
-
-        ctx.font = `900 ${fontSize}px ${fontFam}`;
-        ctx.textAlign = 'center';
-
-        const textY = (canvas.height * posY) / 100;
-        const textWidth = ctx.measureText(text).width;
-
-        if (tagBox) {
-          ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
-          ctx.fillRect((canvas.width / 2) - (textWidth / 2) - 16, textY - parseInt(fontSize), textWidth + 32, parseInt(fontSize) + 16);
-        }
-
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = strokeColor;
-        ctx.strokeText(text, canvas.width / 2, textY);
-
-        ctx.fillStyle = textColor;
-        ctx.fillText(text, canvas.width / 2, textY);
-      }
-    }
-
-    async function startExport() {
-      if (!video.src || isNaN(video.duration)) {
-        alert("Pehle koi video clip choose karein!");
-        return;
-      }
-
-      isExporting = true;
-      video.pause();
-      if (audioLoopback.src) audioLoopback.pause();
-      if (voiceTrack.src) voiceTrack.pause();
-      bigPlayBtn.style.display = 'none';
-
-      const modal = document.getElementById('exportModal');
-      const progressFill = document.getElementById('progressFill');
-      const progressPercent = document.getElementById('progressPercent');
-      const progressEta = document.getElementById('progressEta');
-
-      modal.style.display = 'flex';
-      progressFill.style.width = '1%';
-      progressPercent.innerText = '1%';
-      progressEta.innerText = 'Starting render...';
-
-      exportStartTime = Date.now();
-
-      const start = parseFloat(document.getElementById('trimStart').value) || 0;
-      const end = parseFloat(document.getElementById('trimEnd').value) || video.duration;
-      const totalDuration = Math.max(0.1, end - start);
-
-      video.currentTime = start;
-      await new Promise(r => {
-        const onSeek = () => { video.removeEventListener('seeked', onSeek); r(); };
-        video.addEventListener('seeked', onSeek);
-        setTimeout(r, 500);
-      });
-      drawFrame();
-
-      const stream = canvas.captureStream(30);
-      let selectedMime = 'video/webm';
-      const possibleTypes = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp8', 'video/webm'];
-      for (const t of possibleTypes) {
-        if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) {
-          selectedMime = t;
-          break;
-        }
-      }
-
-      let recorder;
-      try {
-        recorder = new MediaRecorder(stream, { mimeType: selectedMime });
-      } catch (err) {
-        recorder = new MediaRecorder(stream);
-      }
-
-      const chunks = [];
-      recorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) chunks.push(e.data);
-      };
-
-      recorder.onstop = () => {
-        const isMp4 = selectedMime.includes('mp4');
-        const blob = new Blob(chunks, { type: isMp4 ? 'video/mp4' : 'video/webm' });
-        const ext = isMp4 ? 'mp4' : 'webm';
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `CreatorCut_${Date.now()}.${ext}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        modal.style.display = 'none';
-        isExporting = false;
-        bigPlayBtn.style.display = 'flex';
-        video.currentTime = start;
-        drawFrame();
-        alert("Export Complete! Video aapke phone ke Downloads / Gallery mein save ho gayi hai.");
-      };
-
-      recorder.start(100);
-      video.muted = true;
-      try { await video.play(); } catch (e) {}
-
-      const checkInterval = setInterval(() => {
-        if (video.currentTime >= end || video.ended) {
-          clearInterval(checkInterval);
-          video.pause();
-          progressFill.style.width = '100%';
-          progressPercent.innerText = '100%';
-          progressEta.innerText = 'Finalizing file...';
-          setTimeout(() => recorder.stop(), 500);
-          return;
-        }
-
-        drawFrame();
-
-        const currentElapsed = Math.max(0, video.currentTime - start);
-        const pct = Math.min(99, Math.max(1, (currentElapsed / totalDuration) * 100));
-
-        progressFill.style.width = `${pct.toFixed(0)}%`;
-        progressPercent.innerText = `${pct.toFixed(0)}%`;
-
-        const timeSpent = (Date.now() - exportStartTime) / 1000;
-        const estTotal = (timeSpent / (pct / 100));
-        const rem = Math.max(1, estTotal - timeSpent);
-        progressEta.innerText = `ETA: ~${Math.ceil(rem)}s remaining`;
-      }, 66);
-    }
-  </script>
-</body>
-</html>
+        const start = parseFloat(document
