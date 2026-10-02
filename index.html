@@ -1,403 +1,3530 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>creatorCUT - Universal Edition</title>
-    <style>
-        :root {
-            --bg: #09090b; --panel: #18181b; 
-            --accent-gaming: #ff0055; --accent-bhakti: #ff9933; 
-            --accent-ai: #00f2fe; --text: #f4f4f5;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        .header { background: var(--panel); padding: 15px 20px; display: flex; justify-content: space-between; border-bottom: 1px solid #27272a; align-items: center; }
-        .logo { font-size: 22px; font-weight: 900; background: linear-gradient(90deg, var(--accent-gaming), var(--accent-bhakti), var(--accent-ai)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        .btn { color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; }
-        .btn:hover { opacity: 0.8; }
-        .btn-gaming { background: var(--accent-gaming); }
-        .btn-bhakti { background: var(--accent-bhakti); color: #000; }
-        .btn-ai { background: var(--accent-ai); color: #000; }
-        .btn-export { background: #fff; color: #000; }
-        
-        .workspace { display: flex; flex: 1; overflow: hidden; }
-        .sidebar { width: 380px; background: var(--panel); padding: 20px; overflow-y: auto; border-right: 1px solid #27272a; }
-        
-        .box { background: #27272a; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #555; }
-        .box.ai { border-left-color: var(--accent-ai); }
-        .box.gaming { border-left-color: var(--accent-gaming); }
-        .box.bhakti { border-left-color: var(--accent-bhakti); }
-        
-        .box h3 { font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        
-        input[type="text"] { width: 100%; padding: 10px; background: #18181b; border: 1px solid #3f3f46; color: white; border-radius: 4px; margin-bottom: 10px; }
-        
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .sfx-btn { background: #3f3f46; border: none; color: white; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .sfx-btn:hover { background: #555; }
-        
-        .main-stage { flex: 1; display: flex; flex-direction: column; }
-        .preview { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; background: #000; }
-        canvas { max-width: 100%; max-height: 100%; border-radius: 4px; border: 1px solid #333; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
-        
-        .timeline { height: 90px; background: var(--panel); border-top: 1px solid #27272a; padding: 15px; display: flex; align-items: center; gap: 15px; }
-        input[type="range"] { flex: 1; accent-color: #fff; }
-        
-        video { display: none; }
-        .loader { display: none; font-size: 12px; color: var(--accent-ai); margin-top: 5px; text-align: center; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>CREATORCUT — YouTube Video Editor</title>
+
+<style>
+:root{
+    --bg:#08080b;
+    --panel:#111116;
+    --panel2:#19191f;
+    --panel3:#24242c;
+    --border:#303039;
+    --text:#f5f5f7;
+    --muted:#9b9ba6;
+
+    --pink:#ff0055;
+    --orange:#ff9d2e;
+    --cyan:#00e5ff;
+    --green:#00d084;
+    --purple:#9b5cff;
+}
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    height:100vh;
+    overflow:hidden;
+}
+
+button,
+input,
+select{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.app{
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+}
+
+/* HEADER */
+
+.header{
+    height:64px;
+    background:#101014;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px;
+    gap:20px;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:220px;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:1000;
+    letter-spacing:-1px;
+    background:linear-gradient(
+        90deg,
+        var(--pink),
+        var(--orange),
+        var(--cyan)
+    );
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.pro{
+    background:#25252d;
+    color:#aaa;
+    border:1px solid #3b3b46;
+    border-radius:5px;
+    padding:3px 6px;
+    font-size:9px;
+    font-weight:900;
+}
+
+.headerActions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+}
+
+/* BUTTONS */
+
+.btn{
+    border:0;
+    border-radius:6px;
+    padding:9px 13px;
+    color:#fff;
+    font-weight:800;
+    font-size:12px;
+    transition:.15s;
+}
+
+.btn:hover{
+    transform:translateY(-1px);
+    filter:brightness(1.1);
+}
+
+.btn-dark{
+    background:#292930;
+}
+
+.btn-pink{
+    background:var(--pink);
+}
+
+.btn-orange{
+    background:var(--orange);
+    color:#111;
+}
+
+.btn-cyan{
+    background:var(--cyan);
+    color:#001114;
+}
+
+.btn-green{
+    background:var(--green);
+    color:#00140e;
+}
+
+.btn-white{
+    background:#fff;
+    color:#000;
+}
+
+.btn-purple{
+    background:var(--purple);
+}
+
+.btn-small{
+    padding:6px 9px;
+    font-size:11px;
+}
+
+/* MAIN */
+
+.workspace{
+    flex:1;
+    display:flex;
+    min-height:0;
+}
+
+/* LEFT PANEL */
+
+.sidebar{
+    width:350px;
+    background:var(--panel);
+    border-right:1px solid var(--border);
+    overflow-y:auto;
+    padding:14px;
+}
+
+.section{
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:13px;
+    margin-bottom:12px;
+}
+
+.sectionTitle{
+    font-size:13px;
+    font-weight:900;
+    margin-bottom:11px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.sectionTitle span{
+    color:var(--muted);
+    font-size:10px;
+    font-weight:600;
+}
+
+label{
+    display:block;
+    color:#c7c7ce;
+    font-size:11px;
+    margin-bottom:5px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select,
+textarea{
+    width:100%;
+    background:#0e0e12;
+    border:1px solid #383842;
+    color:#fff;
+    padding:9px;
+    border-radius:5px;
+    outline:none;
+    margin-bottom:8px;
+}
+
+textarea{
+    min-height:70px;
+    resize:vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+    border-color:var(--cyan);
+}
+
+.row{
+    display:flex;
+    gap:7px;
+}
+
+.row > *{
+    flex:1;
+}
+
+.grid2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+}
+
+.grid3{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:6px;
+}
+
+.control{
+    margin-bottom:10px;
+}
+
+.controlHeader{
+    display:flex;
+    justify-content:space-between;
+    color:#bbb;
+    font-size:10px;
+    margin-bottom:4px;
+}
+
+input[type="range"]{
+    width:100%;
+    accent-color:var(--cyan);
+}
+
+.checkbox{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin:6px 0;
+}
+
+.checkbox input{
+    accent-color:var(--pink);
+}
+
+.preset{
+    width:100%;
+    background:#292930;
+    color:#fff;
+    border:1px solid #393944;
+    border-radius:5px;
+    padding:8px;
+    font-size:11px;
+    font-weight:800;
+}
+
+/* CENTER */
+
+.editor{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+}
+
+.previewArea{
+    flex:1;
+    min-height:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+        radial-gradient(circle at center,#17171d 0,#08080b 65%);
+    padding:22px;
+    position:relative;
+}
+
+.canvasWrap{
+    position:relative;
+    max-width:100%;
+    max-height:100%;
+}
+
+canvas{
+    display:block;
+    max-width:100%;
+    max-height:calc(100vh - 230px);
+    background:#000;
+    border:1px solid #34343d;
+    border-radius:6px;
+    box-shadow:0 20px 80px rgba(0,0,0,.65);
+}
+
+.emptyState{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    pointer-events:none;
+    color:#777783;
+}
+
+.emptyState strong{
+    color:#ddd;
+    font-size:20px;
+    margin-bottom:5px;
+}
+
+/* TIMELINE */
+
+.timeline{
+    height:160px;
+    background:#111116;
+    border-top:1px solid var(--border);
+    padding:10px 15px;
+}
+
+.transport{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:9px;
+}
+
+.time{
+    font-family:monospace;
+    color:#bbb;
+    font-size:12px;
+    min-width:95px;
+}
+
+#timelineRange{
+    flex:1;
+}
+
+.timelineTrack{
+    height:65px;
+    background:#08080b;
+    border:1px solid #2d2d35;
+    border-radius:6px;
+    position:relative;
+    overflow:hidden;
+}
+
+.trackVideo{
+    position:absolute;
+    top:8px;
+    left:8px;
+    right:8px;
+    height:23px;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #292935 0,
+            #292935 45px,
+            #32323e 46px,
+            #32323e 90px
+        );
+    border-radius:4px;
+}
+
+.trackLabel{
+    position:absolute;
+    left:8px;
+    top:12px;
+    color:#ddd;
+    font-size:10px;
+    font-weight:800;
+}
+
+.trackPip{
+    position:absolute;
+    top:38px;
+    left:8px;
+    right:35%;
+    height:18px;
+    background:#3a1930;
+    border:1px solid #81214e;
+    border-radius:4px;
+}
+
+.playhead{
+    position:absolute;
+    top:0;
+    bottom:0;
+    width:2px;
+    background:#fff;
+    box-shadow:0 0 7px white;
+    left:0;
+    pointer-events:none;
+}
+
+/* STATUS */
+
+.status{
+    position:fixed;
+    bottom:175px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#050507;
+    border:1px solid #383842;
+    padding:9px 15px;
+    border-radius:7px;
+    font-size:12px;
+    display:none;
+    z-index:50;
+}
+
+.status.show{
+    display:block;
+}
+
+/* MODAL */
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.75);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.modalBox{
+    width:min(620px,92vw);
+    max-height:85vh;
+    overflow:auto;
+    background:#15151b;
+    border:1px solid #3a3a45;
+    border-radius:12px;
+    padding:20px;
+    box-shadow:0 30px 100px rgba(0,0,0,.7);
+}
+
+.modalHeader{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:15px;
+}
+
+.close{
+    background:#292930;
+    color:#fff;
+    border:0;
+    width:30px;
+    height:30px;
+    border-radius:5px;
+}
+
+/* DROP */
+
+.dropZone{
+    border:1px dashed #444450;
+    border-radius:7px;
+    padding:15px;
+    text-align:center;
+    color:#999;
+    font-size:11px;
+    margin-bottom:9px;
+}
+
+.dropZone.drag{
+    border-color:var(--cyan);
+    background:rgba(0,229,255,.06);
+}
+
+/* MOBILE */
+
+@media(max-width:1000px){
+    .sidebar{
+        width:290px;
+    }
+
+    .header{
+        height:auto;
+        min-height:64px;
+    }
+
+    .brand{
+        min-width:auto;
+    }
+
+    .logo{
+        font-size:18px;
+    }
+}
+
+@media(max-width:750px){
+    body{
+        overflow:auto;
+    }
+
+    .app{
+        height:auto;
+        min-height:100vh;
+    }
+
+    .workspace{
+        flex-direction:column;
+    }
+
+    .sidebar{
+        width:100%;
+        order:2;
+        max-height:none;
+    }
+
+    .editor{
+        min-height:600px;
+    }
+
+    .previewArea{
+        min-height:400px;
+    }
+
+    .header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .headerActions{
+        width:100%;
+        justify-content:flex-start;
+    }
+}
+</style>
 </head>
+
 <body>
 
-    <div class="header">
-        <div class="logo">creatorCUT PRO</div>
-        <div style="display: flex; gap: 10px;">
-            <label class="btn btn-gaming" style="cursor: pointer;">
-                Load Media
-                <input type="file" id="videoInput" accept="video/*,image/*" style="display: none;">
-            </label>
-            <label class="btn btn-gaming" style="cursor: pointer;">
-                Load Facecam (PIP)
-                <input type="file" id="facecamInput" accept="video/*" style="display: none;">
-            </label>
-            <button class="btn btn-export" id="exportThumbBtn">📸 Snapshot</button>
-            <button class="btn btn-export" id="exportBtn">🎬 Export WebM</button>
-        </div>
+<div class="app">
+
+<header class="header">
+
+    <div class="brand">
+        <div class="logo">CREATORCUT</div>
+        <div class="pro">PRO</div>
     </div>
 
-    <div class="workspace">
-        <!-- ALL FEATURES SIDEBAR -->
-        <div class="sidebar">
-            
-            <!-- AI STUDIO -->
-            <div class="box ai">
-                <h3 style="color: var(--accent-ai);">✨ AI Studio</h3>
-                <input type="text" id="aiPrompt" placeholder="Describe photo or video scene...">
-                <div class="grid-2">
-                    <button class="btn btn-ai" id="genAiPhotoBtn">Gen Photo</button>
-                    <button class="btn btn-ai" id="genAiVideoBtn">Gen Video</button>
-                </div>
-                <div class="loader" id="aiLoader">Generating via AI... please wait...</div>
-            </div>
+    <div class="headerActions">
 
-            <!-- GAMING FEATURES -->
-            <div class="box gaming">
-                <h3 style="color: var(--accent-gaming);">🎮 Gaming Tools</h3>
-                <div style="margin-bottom: 10px;">
-                    <label style="font-size: 12px; display: block;"><input type="checkbox" id="efxShake"> Screen Shake (Damage)</label>
-                    <label style="font-size: 12px; display: block; margin-top: 5px;"><input type="checkbox" id="efxZoomGaming"> Sniper Zoom (Fast)</label>
-                </div>
-                <div class="grid-2">
-                    <button class="sfx-btn" onclick="playBeep(400, 'square')">🔫 Headshot</button>
-                    <button class="sfx-btn" onclick="playBeep(100, 'square')">💀 Wasted</button>
-                </div>
-            </div>
+        <label class="btn btn-pink" style="cursor:pointer">
+            📁 Media
+            <input id="mediaInput"
+                   type="file"
+                   accept="video/*,image/*"
+                   hidden>
+        </label>
 
-            <!-- BHAKTI FEATURES -->
-            <div class="box bhakti">
-                <h3 style="color: var(--accent-bhakti);">🌸 Bhakti Tools</h3>
-                <div style="margin-bottom: 10px;">
-                    <label style="font-size: 12px; display: block;"><input type="checkbox" id="efxGlow"> Divine Glow (Tej)</label>
-                    <label style="font-size: 12px; display: block; margin-top: 5px;"><input type="checkbox" id="efxZoomBhakti"> Darshan Zoom (Slow)</label>
-                    <label style="font-size: 12px; display: block; margin-top: 5px;"><input type="checkbox" id="efxBorder"> Saffron Frame</label>
-                </div>
-                <div class="grid-2">
-                    <button class="sfx-btn" onclick="playBell()">🔔 Ghanti</button>
-                    <button class="sfx-btn" onclick="playOm()">ॐ Om Chant</button>
-                </div>
-            </div>
+        <label class="btn btn-dark" style="cursor:pointer">
+            🎥 Facecam
+            <input id="facecamInput"
+                   type="file"
+                   accept="video/*"
+                   hidden>
+        </label>
 
-            <!-- TEXT OVERLAYS -->
-            <div class="box">
-                <h3 style="color: #fff;">💬 Text & Watermarks</h3>
-                <input type="text" id="watermarkText" placeholder="Watermark (e.g. SHADOWGAMING)">
-                <input type="text" id="subtitlesText" placeholder="Subtitles / Mantra Lyrics">
-            </div>
+        <button class="btn btn-dark" id="snapshotBtn">
+            📸 Thumbnail
+        </button>
 
-        </div>
+        <button class="btn btn-white" id="exportBtn">
+            🎬 Export WebM
+        </button>
 
-        <div class="main-stage">
-            <div class="preview">
-                <canvas id="videoCanvas" width="1280" height="720"></canvas>
-            </div>
-            <div class="timeline">
-                <button class="btn btn-export" id="playBtn" style="width: 80px;">Play</button>
-                <input type="range" id="scrubber" min="0" max="100" value="0" step="0.1">
-                <span id="timeDisplay" style="font-family: monospace; font-size: 14px;">00:00.0</span>
-            </div>
-        </div>
     </div>
 
-    <video id="sourceVideo" crossorigin="anonymous" playsinline loop></video>
-    <video id="facecamVideo" crossorigin="anonymous" playsinline loop></video>
+</header>
 
-    <script>
-        const videoInput = document.getElementById('videoInput');
-        const facecamInput = document.getElementById('facecamInput');
-        const sourceVideo = document.getElementById('sourceVideo');
-        const facecamVideo = document.getElementById('facecamVideo');
-        const canvas = document.getElementById('videoCanvas');
-        const ctx = canvas.getContext('2d');
-        const playBtn = document.getElementById('playBtn');
-        const scrubber = document.getElementById('scrubber');
-        
-        let animationId;
-        let currentMode = 'none'; 
-        let staticImage = new Image();
-        let bhaktiZoomLevel = 1;
 
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+<div class="workspace">
 
-        // Audio Generators
-        function playBeep(freq, type) {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+    <!-- MEDIA -->
+
+    <div class="section">
+
+        <div class="sectionTitle">
+            📁 Media
+            <span>Import</span>
+        </div>
+
+        <div class="dropZone" id="dropZone">
+            Drop video or image here
+        </div>
+
+        <div class="grid2">
+            <label class="btn btn-dark" style="text-align:center;cursor:pointer">
+                Choose Media
+                <input id="mediaInput2"
+                       type="file"
+                       accept="video/*,image/*"
+                       hidden>
+            </label>
+
+            <label class="btn btn-dark" style="text-align:center;cursor:pointer">
+                Add Facecam
+                <input id="facecamInput2"
+                       type="file"
+                       accept="video/*"
+                       hidden>
+            </label>
+        </div>
+
+    </div>
+
+
+    <!-- AI STUDIO -->
+
+    <div class="section">
+
+        <div class="sectionTitle" style="color:var(--cyan)">
+            ✨ AI STUDIO
+            <span>IMAGE + VIDEO</span>
+        </div>
+
+        <label>Pollinations API Key</label>
+
+        <input
+            id="apiKey"
+            type="password"
+            placeholder="Enter your publishable/user-authorized key">
+
+        <small style="display:block;color:#777;font-size:9px;margin-bottom:9px">
+            Do not put a private sk_ secret key into public website code.
+        </small>
+
+        <label>AI Model</label>
+
+        <select id="imageModel">
+            <option value="black-forest-labs/flux.2-pro">
+                FLUX 2 Pro
+            </option>
+            <option value="black-forest-labs/flux.2-max">
+                FLUX 2 Max
+            </option>
+            <option value="google/gemini-3.1-flash-image">
+                Gemini Image
+            </option>
+            <option value="openai/gpt-image-2">
+                GPT Image 2
+            </option>
+            <option value="ideogram-ai/ideogram-v4-quality">
+                Ideogram
+            </option>
+        </select>
+
+        <label>Video Idea</label>
+
+        <textarea
+            id="videoIdea"
+            placeholder="Example: Krishna devotional short at sunrise with temple bells..."></textarea>
+
+        <div class="grid2">
+
+            <button class="btn btn-cyan"
+                    id="makePromptBtn">
+                💡 Make Prompt
+            </button>
+
+            <button class="btn btn-dark"
+                    id="clearPromptBtn">
+                Clear
+            </button>
+
+        </div>
+
+        <label style="margin-top:9px">
+            Generated Image Prompt
+        </label>
+
+        <textarea
+            id="aiPrompt"
+            placeholder="Your cinematic image prompt..."></textarea>
+
+        <div class="grid2">
+
+            <button class="btn btn-cyan"
+                    id="generateImageBtn">
+                🎨 Generate Photo
+            </button>
+
+            <button class="btn btn-purple"
+                    id="generateVideoBtn">
+                🎬 AI Video
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- PRESETS -->
+
+    <div class="section">
+
+        <div class="sectionTitle">
+            🎯 Channel Presets
+        </div>
+
+        <div class="grid2">
+
+            <button class="preset" data-preset="gaming">
+                🎮 Gaming
+            </button>
+
+            <button class="preset" data-preset="bhakti">
+                🪷 Bhakti
+            </button>
+
+            <button class="preset" data-preset="vlog">
+                📹 Vlog
+            </button>
+
+            <button class="preset" data-preset="cinematic">
+                🎞 Cinematic
+            </button>
+
+            <button class="preset" data-preset="shorts">
+                📱 Shorts
+            </button>
+
+            <button class="preset" data-preset="education">
+                🎓 Education
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- FORMAT -->
+
+    <div class="section">
+
+        <div class="sectionTitle">
+            📐 Canvas
+        </div>
+
+        <div class="grid2">
+
+            <button class="preset" data-ratio="16:9">
+                YouTube 16:9
+            </button>
+
+            <button class="preset" data-ratio="9:16">
+                Shorts 9:16
+            </button>
+
+            <button class="preset" data-ratio="1:1">
+                Square 1:1
+            </button>
+
+            <button class="preset" data-ratio="4:5">
+                Instagram 4:5
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- VIDEO CONTROLS -->
+
+    <div class="section">
+
+        <div class="sectionTitle">
+            🎞 Video Controls
+        </div>
+
+        <div class="control">
+
+            <div class="controlHeader">
+                <span>Speed</span>
+                <span id="speedValue">1.00x</span>
+            </div>
+
+            <input id="speed"
+                   type="range"
+                   min=".25"
+                   max="3"
+                   step=".05"
+                   value="1">
+
+        </div>
+
+        <div class="control">
+
+            <div class="controlHeader">
+                <span>Volume</span>
+                <span id="volumeValue">100%</span>
+            </div>
+
+            <input id="volume"
+                   type="range"
+                   min="0"
+                   max="1"
+                   step=".01"
+                   value="1">
+
+        </div>
+
+    </div>
+
+
+    <!-- LOOK -->
+
+    <div class="section">
+
+        <div class="sectionTitle">
+            🎨 Look
+        </div>
+
+        <div class="control">
+
+            <div class="controlHeader">
+                <span>Brightness</span>
+                <span id="brightnessValue">100%</span>
+            </div>
+
+            <input id="brightness"
+                   type="range"
+                   min="50"
+                   max="160"
+                   value="100">
+
+        </div>
+
+        <div class="control">
+
+            <div class="controlHeader">
+                <span>Contrast</span>
+                <span id="contrastValue">100%</span>
+            </div>
+
+            <input id="contrast"
+                   type="range"
+                   min="50"
+                   max="170"
+                   value="100">
+
+        </div>
+
+        <div class="control">
+
+            <div class="controlHeader">
+                <span>Saturation</span>
+                <span id="saturationValue">100%</span>
+            </div>
+
+            <input id="saturation"
+                   type="range"
+                   min="0"
+                   max="200"
+                   value="100">
+
+        </div>
+
+        <div class="control">
+
+            <div class="controlHeader">
+                <span>Blur</span>
+                <span id="blurValue">0px</span>
+            </div>
+
+            <input id="blur"
+                   type="range"
+                   min="0"
+                   max="12"
+                   value="0">
+
+        </div>
+
+        <div class="grid3">
+
+            <button class="btn btn-dark" id="rotateLeft">
+                ↶
+            </button>
+
+            <button class="btn btn-dark" id="rotateRight">
+                ↷
+            </button>
+
+            <button class="btn btn-dark" id="flip">
+                ↔
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- GAMING -->
+
+    <div class="section">
+
+        <div class="sectionTitle" style="color:var(--pink)">
+            🎮 Gaming
+        </div>
+
+        <label class="checkbox">
+            <input type="checkbox" id="shake">
+            Screen Shake
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" id="gamingZoom">
+            Fast Zoom
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" id="gamingVignette">
+            Dark Vignette
+        </label>
+
+    </div>
+
+
+    <!-- BHAKTI -->
+
+    <div class="section">
+
+        <div class="sectionTitle" style="color:var(--orange)">
+            🪷 Bhakti
+        </div>
+
+        <label class="checkbox">
+            <input type="checkbox" id="glow">
+            Divine Glow
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" id="bhaktiZoom">
+            Darshan Zoom
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" id="saffronFrame">
+            Saffron Frame
+        </label>
+
+    </div>
+
+
+    <!-- FACE CAM -->
+
+    <div class="section">
+
+        <div class="sectionTitle">
+            🎥 Facecam PIP
+        </div>
+
+        <div class="control">
+
+            <div class="controlHeader">
+                <span>Size</span>
+                <span id="pipSizeValue">25%</span>
+            </div>
+
+            <input id="pipSize"
+                   type="range"
+                   min="10"
+                   max="45"
+                   value="25">
+
+        </div>
+
+        <select id="pipPosition">
+            <option value="br">Bottom Right</option>
+            <option value="bl">Bottom Left</option>
+            <option value="tr">Top Right</option>
+            <option value="tl">Top Left</option>
+        </select>
+
+        <label class="checkbox">
+            <input type="checkbox" id="pipBorder" checked>
+            PIP Border
+        </label>
+
+    </div>
+
+
+    <!-- TEXT -->
+
+    <div class="section">
+
+        <div class="sectionTitle">
+            💬 Text
+        </div>
+
+        <label>Main Title</label>
+
+        <input
+            id="titleText"
+            type="text"
+            placeholder="YOUR AMAZING VIDEO">
+
+        <label>Subtitle / Caption</label>
+
+        <input
+            id="subtitleText"
+            type="text"
+            placeholder="Subscribe for more">
+
+        <label>Watermark</label>
+
+        <input
+            id="watermark"
+            type="text"
+            placeholder="@YourChannel">
+
+        <div class="control">
+
+            <div class="controlHeader">
+                <span>Text Size</span>
+                <span id="textSizeValue">42px</span>
+            </div>
+
+            <input
+                id="textSize"
+                type="range"
+                min="16"
+                max="100"
+                value="42">
+
+        </div>
+
+    </div>
+
+
+    <!-- PROJECT -->
+
+    <div class="section">
+
+        <div class="sectionTitle">
+            💾 Project
+        </div>
+
+        <div class="grid2">
+
+            <button class="btn btn-dark"
+                    id="saveProjectBtn">
+                Save Project
+            </button>
+
+            <label class="btn btn-dark"
+                   style="text-align:center;cursor:pointer">
+
+                Load Project
+
+                <input
+                    id="loadProjectInput"
+                    type="file"
+                    accept=".json"
+                    hidden>
+
+            </label>
+
+        </div>
+
+    </div>
+
+</aside>
+
+
+<!-- EDITOR -->
+
+<main class="editor">
+
+    <div class="previewArea">
+
+        <div class="canvasWrap">
+
+            <canvas
+                id="canvas"
+                width="1280"
+                height="720">
+            </canvas>
+
+            <div
+                id="emptyState"
+                class="emptyState">
+
+                <strong>CREATORCUT</strong>
+
+                <span>
+                    Import a video/image or generate an AI scene
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TIMELINE -->
+
+    <div class="timeline">
+
+        <div class="transport">
+
+            <button
+                class="btn btn-white"
+                id="playBtn">
+                ▶ Play
+            </button>
+
+            <button
+                class="btn btn-dark"
+                id="stopBtn">
+                ■
+            </button>
+
+            <span
+                class="time"
+                id="timeDisplay">
+                00:00 / 00:00
+            </span>
+
+            <input
+                type="range"
+                id="timelineRange"
+                min="0"
+                max="0"
+                step=".01"
+                value="0">
+
+        </div>
+
+        <div class="timelineTrack">
+
+            <div class="trackVideo">
+                <span class="trackLabel">
+                    MAIN MEDIA
+                </span>
+            </div>
+
+            <div class="trackPip">
+            </div>
+
+            <div
+                class="playhead"
+                id="playhead">
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+</div>
+
+</div>
+
+
+<!-- STATUS -->
+
+<div
+    class="status"
+    id="status">
+</div>
+
+
+<!-- AI MODAL -->
+
+<div
+    class="modal"
+    id="aiModal">
+
+    <div class="modalBox">
+
+        <div class="modalHeader">
+
+            <h2>✨ CREATORCUT AI</h2>
+
+            <button
+                class="close"
+                id="closeModal">
+                ×
+            </button>
+
+        </div>
+
+        <div id="aiModalContent">
+            Generating...
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MEDIA ELEMENTS -->
+
+<video
+    id="sourceVideo"
+    playsinline
+    preload="metadata"
+    style="display:none">
+</video>
+
+<video
+    id="facecamVideo"
+    playsinline
+    preload="metadata"
+    style="display:none">
+</video>
+
+
+<script>
+
+/* =========================================================
+   CREATORCUT
+   Browser Video Editor
+========================================================= */
+
+const $ = id => document.getElementById(id);
+
+const canvas = $("canvas");
+const ctx = canvas.getContext("2d");
+
+const sourceVideo = $("sourceVideo");
+const facecamVideo = $("facecamVideo");
+
+let mode = "none";
+let image = new Image();
+
+let mediaURL = null;
+let facecamURL = null;
+
+let animationFrame = null;
+
+let isPlaying = false;
+
+let rotation = 0;
+let flipX = false;
+
+let zoomLevel = 1;
+
+let duration = 0;
+
+let sourceAudioNode = null;
+let audioDestination = null;
+
+let audioContext = null;
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+const state = {
+
+    ratio:"16:9",
+
+    speed:1,
+    volume:1,
+
+    brightness:100,
+    contrast:100,
+    saturation:100,
+    blur:0,
+
+    shake:false,
+    gamingZoom:false,
+    gamingVignette:false,
+
+    glow:false,
+    bhaktiZoom:false,
+    saffronFrame:false,
+
+    pipSize:25,
+    pipPosition:"br",
+    pipBorder:true,
+
+    title:"",
+    subtitle:"",
+    watermark:"",
+    textSize:42
+};
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+function status(message, timeout=3000){
+
+    const el = $("status");
+
+    el.textContent = message;
+    el.classList.add("show");
+
+    clearTimeout(status.timer);
+
+    status.timer = setTimeout(()=>{
+        el.classList.remove("show");
+    },timeout);
+}
+
+
+/* =========================================================
+   TIME
+========================================================= */
+
+function formatTime(seconds){
+
+    if(!isFinite(seconds)) seconds = 0;
+
+    const m = Math.floor(seconds/60);
+    const s = Math.floor(seconds%60);
+
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+
+/* =========================================================
+   AUDIO
+========================================================= */
+
+function setupAudio(){
+
+    if(audioContext) return;
+
+    audioContext = new (
+        window.AudioContext ||
+        window.webkitAudioContext
+    )();
+
+    audioDestination =
+        audioContext.createMediaStreamDestination();
+
+    try{
+
+        sourceAudioNode =
+            audioContext.createMediaElementSource(sourceVideo);
+
+        sourceAudioNode.connect(audioDestination);
+        sourceAudioNode.connect(audioContext.destination);
+
+    }catch(error){
+
+        console.warn("Audio routing:",error);
+
+    }
+}
+
+
+/* =========================================================
+   MEDIA IMPORT
+========================================================= */
+
+function loadMedia(file){
+
+    if(!file) return;
+
+    if(mediaURL){
+        URL.revokeObjectURL(mediaURL);
+    }
+
+    mediaURL = URL.createObjectURL(file);
+
+    $("emptyState").style.display = "none";
+
+    if(file.type.startsWith("video/")){
+
+        mode = "video";
+
+        sourceVideo.src = mediaURL;
+        sourceVideo.load();
+
+        setupAudio();
+
+        status("Video loaded");
+
+    }else if(file.type.startsWith("image/")){
+
+        mode = "image";
+
+        image = new Image();
+
+        image.onload = ()=>{
+
+            duration = 5;
+
+            $("timelineRange").max = duration;
+
+            render();
+
+        };
+
+        image.src = mediaURL;
+
+        status("Image loaded");
+
+    }
+
+}
+
+
+function loadFacecam(file){
+
+    if(!file) return;
+
+    if(facecamURL){
+        URL.revokeObjectURL(facecamURL);
+    }
+
+    facecamURL = URL.createObjectURL(file);
+
+    facecamVideo.src = facecamURL;
+
+    facecamVideo.load();
+
+    status("Facecam loaded");
+
+}
+
+
+/* =========================================================
+   INPUT EVENTS
+========================================================= */
+
+$("mediaInput").addEventListener(
+    "change",
+    e => loadMedia(e.target.files[0])
+);
+
+$("mediaInput2").addEventListener(
+    "change",
+    e => loadMedia(e.target.files[0])
+);
+
+$("facecamInput").addEventListener(
+    "change",
+    e => loadFacecam(e.target.files[0])
+);
+
+$("facecamInput2").addEventListener(
+    "change",
+    e => loadFacecam(e.target.files[0])
+);
+
+
+/* =========================================================
+   DRAG DROP
+========================================================= */
+
+const dropZone = $("dropZone");
+
+["dragenter","dragover"].forEach(type=>{
+
+    dropZone.addEventListener(type,e=>{
+
+        e.preventDefault();
+
+        dropZone.classList.add("drag");
+
+    });
+
+});
+
+["dragleave","drop"].forEach(type=>{
+
+    dropZone.addEventListener(type,e=>{
+
+        e.preventDefault();
+
+        dropZone.classList.remove("drag");
+
+    });
+
+});
+
+dropZone.addEventListener("drop",e=>{
+
+    const file = e.dataTransfer.files[0];
+
+    loadMedia(file);
+
+});
+
+
+/* =========================================================
+   VIDEO METADATA
+========================================================= */
+
+sourceVideo.addEventListener(
+    "loadedmetadata",
+    ()=>{
+
+        duration = sourceVideo.duration || 0;
+
+        $("timelineRange").max = duration;
+
+        render();
+
+        status(
+            `Loaded ${formatTime(duration)} video`
+        );
+
+    }
+);
+
+
+/* =========================================================
+   VIDEO PLAY
+========================================================= */
+
+$("playBtn").addEventListener("click",async()=>{
+
+    if(mode === "none"){
+
+        status("Import media first");
+
+        return;
+    }
+
+    setupAudio();
+
+    if(audioContext &&
+       audioContext.state === "suspended"){
+
+        await audioContext.resume();
+
+    }
+
+    if(isPlaying){
+
+        pauseEditor();
+
+    }else{
+
+        playEditor();
+
+    }
+
+});
+
+
+function playEditor(){
+
+    isPlaying = true;
+
+    $("playBtn").textContent = "❚❚ Pause";
+
+    sourceVideo.playbackRate = state.speed;
+
+    facecamVideo.playbackRate = state.speed;
+
+    if(mode === "video"){
+
+        sourceVideo.play();
+
+    }
+
+    if(facecamVideo.src){
+
+        facecamVideo.play().catch(()=>{});
+
+    }
+
+    renderLoop();
+
+}
+
+
+function pauseEditor(){
+
+    isPlaying = false;
+
+    $("playBtn").textContent = "▶ Play";
+
+    sourceVideo.pause();
+
+    facecamVideo.pause();
+
+    cancelAnimationFrame(animationFrame);
+
+}
+
+
+$("stopBtn").addEventListener("click",()=>{
+
+    pauseEditor();
+
+    sourceVideo.currentTime = 0;
+    facecamVideo.currentTime = 0;
+
+    $("timelineRange").value = 0;
+
+    render();
+
+});
+
+
+/* =========================================================
+   TIMELINE
+========================================================= */
+
+$("timelineRange").addEventListener(
+    "input",
+    e=>{
+
+        const t = Number(e.target.value);
+
+        if(mode === "video"){
+
+            sourceVideo.currentTime = t;
+
         }
 
-        function playBell() {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 1.5);
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+        if(facecamVideo.src){
+
+            try{
+                facecamVideo.currentTime = t;
+            }catch{}
         }
 
-        function playOm() {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(130, audioCtx.currentTime); 
-            gain.gain.setValueAtTime(0, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 1);
-            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 3);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 3);
+        render();
+
+    }
+);
+
+
+/* =========================================================
+   RENDER LOOP
+========================================================= */
+
+function renderLoop(){
+
+    if(!isPlaying) return;
+
+    render();
+
+    animationFrame =
+        requestAnimationFrame(renderLoop);
+
+}
+
+
+/* =========================================================
+   MAIN RENDER
+========================================================= */
+
+function render(){
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0,0,w,h);
+
+    if(mode === "none") return;
+
+    let shakeX = 0;
+    let shakeY = 0;
+
+    if(state.shake){
+
+        shakeX =
+            (Math.random()-.5)*20;
+
+        shakeY =
+            (Math.random()-.5)*20;
+
+    }
+
+
+    let scale = 1;
+
+    if(state.gamingZoom){
+
+        scale = 1.12;
+
+    }
+
+    if(state.bhaktiZoom){
+
+        zoomLevel += .0008;
+
+        if(zoomLevel > 1.18)
+            zoomLevel = 1.18;
+
+        scale = zoomLevel;
+
+    }
+
+
+    /* FILTER */
+
+    let filter = `
+        brightness(${state.brightness}%)
+        contrast(${state.contrast}%)
+        saturate(${state.saturation}%)
+        blur(${state.blur}px)
+    `;
+
+    if(state.glow){
+
+        filter +=
+            " drop-shadow(0 0 18px rgba(255,200,60,.75))";
+
+    }
+
+
+    ctx.save();
+
+    ctx.filter = filter;
+
+    ctx.translate(w/2 + shakeX,h/2 + shakeY);
+
+    ctx.rotate(rotation*Math.PI/180);
+
+    ctx.scale(
+        flipX ? -scale : scale,
+        scale
+    );
+
+    ctx.translate(-w/2,-h/2);
+
+
+    /* MEDIA */
+
+    if(mode === "video" &&
+       sourceVideo.readyState >= 2){
+
+        drawCover(
+            sourceVideo,
+            0,
+            0,
+            w,
+            h
+        );
+
+    }
+
+    else if(mode === "image" &&
+            image.complete){
+
+        drawCover(
+            image,
+            0,
+            0,
+            w,
+            h
+        );
+
+    }
+
+    ctx.restore();
+
+    ctx.filter = "none";
+
+
+    /* PIP */
+
+    drawPIP();
+
+
+    /* VIGNETTE */
+
+    if(state.gamingVignette){
+
+        const gradient =
+            ctx.createRadialGradient(
+                w/2,
+                h/2,
+                h*.15,
+                w/2,
+                h/2,
+                h*.75
+            );
+
+        gradient.addColorStop(
+            0,
+            "rgba(0,0,0,0)"
+        );
+
+        gradient.addColorStop(
+            1,
+            "rgba(0,0,0,.75)"
+        );
+
+        ctx.fillStyle = gradient;
+
+        ctx.fillRect(0,0,w,h);
+
+    }
+
+
+    /* SAFFRON FRAME */
+
+    if(state.saffronFrame){
+
+        ctx.lineWidth = 14;
+
+        ctx.strokeStyle =
+            "rgba(255,153,51,.95)";
+
+        ctx.strokeRect(
+            7,
+            7,
+            w-14,
+            h-14
+        );
+
+        ctx.lineWidth = 3;
+
+        ctx.strokeStyle =
+            "#ffd84a";
+
+        ctx.strokeRect(
+            18,
+            18,
+            w-36,
+            h-36
+        );
+
+    }
+
+
+    /* TEXT */
+
+    drawText();
+
+
+    /* TIMELINE */
+
+    if(mode === "video"){
+
+        $("timelineRange").value =
+            sourceVideo.currentTime || 0;
+
+        $("timeDisplay").textContent =
+            `${formatTime(sourceVideo.currentTime)}
+             / ${formatTime(duration)}`;
+
+        const percentage =
+            duration
+            ? (sourceVideo.currentTime/duration)*100
+            : 0;
+
+        $("playhead").style.left =
+            percentage + "%";
+
+    }
+
+}
+
+
+/* =========================================================
+   COVER DRAW
+========================================================= */
+
+function drawCover(
+    source,
+    x,
+    y,
+    width,
+    height
+){
+
+    const sw =
+        source.videoWidth ||
+        source.naturalWidth ||
+        width;
+
+    const sh =
+        source.videoHeight ||
+        source.naturalHeight ||
+        height;
+
+    const sourceRatio = sw/sh;
+    const targetRatio = width/height;
+
+    let sx=0;
+    let sy=0;
+    let sWidth=sw;
+    let sHeight=sh;
+
+    if(sourceRatio > targetRatio){
+
+        sWidth = sh*targetRatio;
+
+        sx = (sw-sWidth)/2;
+
+    }else{
+
+        sHeight = sw/targetRatio;
+
+        sy = (sh-sHeight)/2;
+
+    }
+
+    ctx.drawImage(
+        source,
+        sx,
+        sy,
+        sWidth,
+        sHeight,
+        x,
+        y,
+        width,
+        height
+    );
+
+}
+
+
+/* =========================================================
+   PIP
+========================================================= */
+
+function drawPIP(){
+
+    if(
+        !facecamVideo.src ||
+        facecamVideo.readyState < 2
+    ) return;
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    const pw =
+        w * (state.pipSize/100);
+
+    const ph = pw * 9/16;
+
+    const margin = 25;
+
+    let x;
+    let y;
+
+    switch(state.pipPosition){
+
+        case "bl":
+            x = margin;
+            y = h-ph-margin;
+            break;
+
+        case "tr":
+            x = w-pw-margin;
+            y = margin;
+            break;
+
+        case "tl":
+            x = margin;
+            y = margin;
+            break;
+
+        default:
+            x = w-pw-margin;
+            y = h-ph-margin;
+
+    }
+
+    ctx.save();
+
+    if(state.pipBorder){
+
+        ctx.lineWidth = 6;
+
+        ctx.strokeStyle = "#ff0055";
+
+        ctx.strokeRect(
+            x-3,
+            y-3,
+            pw+6,
+            ph+6
+        );
+
+    }
+
+    ctx.drawImage(
+        facecamVideo,
+        x,
+        y,
+        pw,
+        ph
+    );
+
+    ctx.restore();
+
+}
+
+
+/* =========================================================
+   TEXT
+========================================================= */
+
+function drawText(){
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.textAlign = "center";
+
+    if(state.title){
+
+        ctx.font =
+            `900 ${state.textSize}px Arial`;
+
+        ctx.fillStyle = "#fff";
+
+        ctx.strokeStyle = "#000";
+
+        ctx.lineWidth = 8;
+
+        ctx.shadowColor = "#000";
+        ctx.shadowBlur = 8;
+
+        ctx.strokeText(
+            state.title,
+            w/2,
+            state.textSize + 30
+        );
+
+        ctx.fillText(
+            state.title,
+            w/2,
+            state.textSize + 30
+        );
+
+    }
+
+
+    if(state.subtitle){
+
+        ctx.font =
+            `800 ${Math.round(state.textSize*.65)}px Arial`;
+
+        ctx.fillStyle = "#fff";
+
+        ctx.strokeStyle = "#000";
+
+        ctx.lineWidth = 6;
+
+        ctx.strokeText(
+            state.subtitle,
+            w/2,
+            h-55
+        );
+
+        ctx.fillText(
+            state.subtitle,
+            w/2,
+            h-55
+        );
+
+    }
+
+
+    if(state.watermark){
+
+        ctx.textAlign = "left";
+
+        ctx.font =
+            "800 22px Arial";
+
+        ctx.fillStyle =
+            "rgba(255,255,255,.72)";
+
+        ctx.shadowColor = "#000";
+
+        ctx.shadowBlur = 5;
+
+        ctx.fillText(
+            state.watermark,
+            25,
+            35
+        );
+
+    }
+
+    ctx.shadowBlur = 0;
+
+}
+
+
+/* =========================================================
+   UI STATE BINDING
+========================================================= */
+
+function bindRange(id,key,valueId,formatter){
+
+    $(id).addEventListener("input",e=>{
+
+        state[key] =
+            Number(e.target.value);
+
+        if(valueId){
+
+            $(valueId).textContent =
+                formatter
+                ? formatter(state[key])
+                : state[key];
+
         }
 
-        // AI Generation Handlers
-        document.getElementById('genAiPhotoBtn').addEventListener('click', () => {
-            const prompt = document.getElementById('aiPrompt').value;
-            if(!prompt) return alert('Prompt likho pehle!');
-            document.getElementById('aiLoader').style.display = 'block';
-            
-            staticImage.crossOrigin = "Anonymous";
-            staticImage.onload = () => {
-                currentMode = 'image';
-                bhaktiZoomLevel = 1;
-                document.getElementById('aiLoader').style.display = 'none';
-                renderFrame();
-            };
-            staticImage.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1280&height=720&nologo=true`;
-        });
+        render();
 
-        document.getElementById('genAiVideoBtn').addEventListener('click', () => {
-            const prompt = document.getElementById('aiPrompt').value;
-            if(!prompt) return alert('Prompt likho pehle!');
-            document.getElementById('aiLoader').innerText = 'Simulating AI Video generation...';
-            document.getElementById('aiLoader').style.display = 'block';
-            
-            // Simulating video gen using the same photo API to avoid breaking free limits
-            staticImage.crossOrigin = "Anonymous";
-            staticImage.onload = () => {
-                currentMode = 'image';
-                document.getElementById('aiLoader').style.display = 'none';
-                document.getElementById('aiLoader').innerText = 'Generating via AI... please wait...';
-                document.getElementById('efxZoomBhakti').checked = true; // Auto apply zoom to simulate motion
-                renderFrame();
-            };
-            staticImage.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + " dynamic motion cinematic") }?width=1280&height=720&nologo=true`;
-        });
+    });
 
-        // Load Media
-        videoInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            bhaktiZoomLevel = 1;
-            if(file.type.startsWith('video/')) {
-                currentMode = 'video';
-                sourceVideo.src = URL.createObjectURL(file);
-                sourceVideo.load();
-            } else {
-                currentMode = 'image';
-                staticImage.onload = () => renderFrame();
-                staticImage.src = URL.createObjectURL(file);
-            }
-        });
+}
 
-        facecamInput.addEventListener('change', (e) => {
-            if(e.target.files[0]) {
-                facecamVideo.src = URL.createObjectURL(e.target.files[0]);
-                facecamVideo.load();
-            }
-        });
 
-        sourceVideo.addEventListener('loadedmetadata', () => {
-            scrubber.max = sourceVideo.duration;
-            renderFrame();
-        });
+bindRange(
+    "speed",
+    "speed",
+    "speedValue",
+    v=>v.toFixed(2)+"x"
+);
 
-        // Main Render Loop
-        function renderFrame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            let dx = 0, dy = 0;
-            let scale = 1;
-            
-            // Gaming Shake
-            if(document.getElementById('efxShake').checked) {
-                dx = (Math.random() - 0.5) * 20;
-                dy = (Math.random() - 0.5) * 20;
-            }
-            
-            ctx.save();
-            
-            // Bhakti Glow
-            if(document.getElementById('efxGlow').checked) {
-                ctx.filter = 'brightness(110%) contrast(105%) sepia(30%)';
-            }
+bindRange(
+    "volume",
+    "volume",
+    "volumeValue",
+    v=>Math.round(v*100)+"%"
+);
 
-            // Zoom Handlers (Gaming is instant, Bhakti is slow)
-            if(document.getElementById('efxZoomGaming').checked) {
-                scale = 1.5;
-            } else if(document.getElementById('efxZoomBhakti').checked) {
-                if(bhaktiZoomLevel < 1.3) bhaktiZoomLevel += 0.0005;
-                scale = bhaktiZoomLevel;
-            }
+bindRange(
+    "brightness",
+    "brightness",
+    "brightnessValue",
+    v=>v+"%"
+);
 
-            if(scale !== 1) {
-                ctx.translate(canvas.width/2, canvas.height/2);
-                ctx.scale(scale, scale);
-                ctx.translate(-canvas.width/2, -canvas.height/2);
-            }
+bindRange(
+    "contrast",
+    "contrast",
+    "contrastValue",
+    v=>v+"%"
+);
 
-            // Draw Background Media
-            if(currentMode === 'video' && sourceVideo.readyState >= 2) {
-                ctx.drawImage(sourceVideo, dx, dy, canvas.width, canvas.height);
-            } else if(currentMode === 'image' && staticImage.src) {
-                ctx.drawImage(staticImage, dx, dy, canvas.width, canvas.height);
-            }
+bindRange(
+    "saturation",
+    "saturation",
+    "saturationValue",
+    v=>v+"%"
+);
 
-            ctx.restore();
-            ctx.filter = 'none';
+bindRange(
+    "blur",
+    "blur",
+    "blurValue",
+    v=>v+"px"
+);
 
-            // Facecam PIP
-            if(facecamVideo.readyState >= 2) {
-                const pw = 320, ph = 180;
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = '#ff0055'; // Gaming PIP border
-                ctx.strokeRect(canvas.width - pw - 20, canvas.height - ph - 20, pw, ph);
-                ctx.drawImage(facecamVideo, canvas.width - pw - 20, canvas.height - ph - 20, pw, ph);
-            }
+bindRange(
+    "pipSize",
+    "pipSize",
+    "pipSizeValue",
+    v=>v+"%"
+);
 
-            // Bhakti Saffron Frame
-            if(document.getElementById('efxBorder').checked) {
-                ctx.lineWidth = 15;
-                ctx.strokeStyle = 'rgba(255, 153, 51, 0.9)';
-                ctx.strokeRect(7, 7, canvas.width - 14, canvas.height - 14);
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = 'rgba(255, 215, 0, 0.9)';
-                ctx.strokeRect(18, 18, canvas.width - 36, canvas.height - 36);
-            }
+bindRange(
+    "textSize",
+    "textSize",
+    "textSizeValue",
+    v=>v+"px"
+);
 
-            // Watermark
-            const watermark = document.getElementById('watermarkText').value;
-            if(watermark) {
-                ctx.font = 'bold 26px Arial';
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.shadowColor = '#000';
-                ctx.shadowBlur = 4;
-                ctx.fillText(watermark, 30, 40);
-                ctx.shadowBlur = 0;
-            }
 
-            // Subtitles / Mantra
-            const subs = document.getElementById('subtitlesText').value;
-            if(subs) {
-                ctx.font = 'bold 45px Arial';
-                ctx.fillStyle = '#fff';
-                ctx.textAlign = 'center';
-                ctx.shadowColor = '#000';
-                ctx.shadowBlur = 10;
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#000';
-                ctx.strokeText(subs, canvas.width / 2, canvas.height - 50);
-                ctx.fillText(subs, canvas.width / 2, canvas.height - 50);
-                ctx.shadowBlur = 0;
-            }
+/* =========================================================
+   TEXT
+========================================================= */
 
-            if(currentMode === 'video' && !sourceVideo.paused) {
-                scrubber.value = sourceVideo.currentTime;
-                document.getElementById('timeDisplay').innerText = sourceVideo.currentTime.toFixed(1) + "s";
-            }
+$("titleText").addEventListener("input",e=>{
+
+    state.title = e.target.value;
+
+    render();
+
+});
+
+$("subtitleText").addEventListener("input",e=>{
+
+    state.subtitle = e.target.value;
+
+    render();
+
+});
+
+$("watermark").addEventListener("input",e=>{
+
+    state.watermark = e.target.value;
+
+    render();
+
+});
+
+
+/* =========================================================
+   CHECKBOXES
+========================================================= */
+
+[
+    ["shake","shake"],
+    ["gamingZoom","gamingZoom"],
+    ["gamingVignette","gamingVignette"],
+    ["glow","glow"],
+    ["bhaktiZoom","bhaktiZoom"],
+    ["saffronFrame","saffronFrame"],
+    ["pipBorder","pipBorder"]
+].forEach(([id,key])=>{
+
+    $(id).addEventListener("change",e=>{
+
+        state[key] =
+            e.target.checked;
+
+        render();
+
+    });
+
+});
+
+
+/* =========================================================
+   SELECTS
+========================================================= */
+
+$("pipPosition").addEventListener(
+    "change",
+    e=>{
+
+        state.pipPosition =
+            e.target.value;
+
+        render();
+
+    }
+);
+
+
+/* =========================================================
+   ROTATION
+========================================================= */
+
+$("rotateLeft").onclick = ()=>{
+
+    rotation -= 90;
+
+    render();
+
+};
+
+$("rotateRight").onclick = ()=>{
+
+    rotation += 90;
+
+    render();
+
+};
+
+$("flip").onclick = ()=>{
+
+    flipX = !flipX;
+
+    render();
+
+};
+
+
+/* =========================================================
+   SPEED + VOLUME
+========================================================= */
+
+$("speed").addEventListener(
+    "input",
+    ()=>{
+
+        sourceVideo.playbackRate =
+            state.speed;
+
+        facecamVideo.playbackRate =
+            state.speed;
+
+    }
+);
+
+$("volume").addEventListener(
+    "input",
+    ()=>{
+
+        sourceVideo.volume =
+            state.volume;
+
+    }
+);
+
+
+/* =========================================================
+   ASPECT RATIOS
+========================================================= */
+
+document.querySelectorAll("[data-ratio]")
+.forEach(button=>{
+
+    button.addEventListener("click",()=>{
+
+        setRatio(button.dataset.ratio);
+
+    });
+
+});
+
+
+function setRatio(ratio){
+
+    state.ratio = ratio;
+
+    switch(ratio){
+
+        case "9:16":
+
+            canvas.width = 720;
+            canvas.height = 1280;
+
+            break;
+
+        case "1:1":
+
+            canvas.width = 1080;
+            canvas.height = 1080;
+
+            break;
+
+        case "4:5":
+
+            canvas.width = 1080;
+            canvas.height = 1350;
+
+            break;
+
+        default:
+
+            canvas.width = 1280;
+            canvas.height = 720;
+
+    }
+
+    render();
+
+    status("Canvas: "+ratio);
+
+}
+
+
+/* =========================================================
+   PRESETS
+========================================================= */
+
+document.querySelectorAll("[data-preset]")
+.forEach(button=>{
+
+    button.addEventListener(
+        "click",
+        ()=>applyPreset(button.dataset.preset)
+    );
+
+});
+
+
+function applyPreset(preset){
+
+    /* reset */
+
+    state.shake = false;
+    state.gamingZoom = false;
+    state.gamingVignette = false;
+
+    state.glow = false;
+    state.bhaktiZoom = false;
+    state.saffronFrame = false;
+
+    switch(preset){
+
+        case "gaming":
+
+            state.contrast = 115;
+            state.saturation = 120;
+
+            state.shake = true;
+            state.gamingZoom = true;
+            state.gamingVignette = true;
+
+            setRatio("16:9");
+
+            break;
+
+
+        case "bhakti":
+
+            state.brightness = 108;
+            state.saturation = 112;
+
+            state.glow = true;
+            state.bhaktiZoom = true;
+            state.saffronFrame = true;
+
+            setRatio("9:16");
+
+            break;
+
+
+        case "vlog":
+
+            state.brightness = 105;
+            state.contrast = 105;
+            state.saturation = 108;
+
+            setRatio("16:9");
+
+            break;
+
+
+        case "cinematic":
+
+            state.contrast = 115;
+            state.saturation = 90;
+            state.brightness = 96;
+
+            setRatio("16:9");
+
+            break;
+
+
+        case "shorts":
+
+            setRatio("9:16");
+
+            state.saturation = 115;
+            state.contrast = 110;
+
+            break;
+
+
+        case "education":
+
+            setRatio("16:9");
+
+            state.brightness = 105;
+            state.contrast = 105;
+
+            break;
+
+    }
+
+    syncControls();
+
+    render();
+
+    status(
+        preset.toUpperCase()+" preset applied"
+    );
+
+}
+
+
+function syncControls(){
+
+    const map = {
+
+        speed:"speed",
+        volume:"volume",
+        brightness:"brightness",
+        contrast:"contrast",
+        saturation:"saturation",
+        blur:"blur",
+        pipSize:"pipSize",
+        textSize:"textSize"
+
+    };
+
+    Object.entries(map).forEach(
+        ([key,id])=>{
+
+            $(id).value =
+                state[key];
+
+        }
+    );
+
+    $("speedValue").textContent =
+        state.speed.toFixed(2)+"x";
+
+    $("volumeValue").textContent =
+        Math.round(state.volume*100)+"%";
+
+    $("brightnessValue").textContent =
+        state.brightness+"%";
+
+    $("contrastValue").textContent =
+        state.contrast+"%";
+
+    $("saturationValue").textContent =
+        state.saturation+"%";
+
+    $("blurValue").textContent =
+        state.blur+"px";
+
+    $("pipSizeValue").textContent =
+        state.pipSize+"%";
+
+    $("textSizeValue").textContent =
+        state.textSize+"px";
+
+
+    [
+        "shake",
+        "gamingZoom",
+        "gamingVignette",
+        "glow",
+        "bhaktiZoom",
+        "saffronFrame",
+        "pipBorder"
+    ].forEach(id=>{
+
+        $(id).checked =
+            state[id];
+
+    });
+
+    $("pipPosition").value =
+        state.pipPosition;
+
+    $("titleText").value =
+        state.title;
+
+    $("subtitleText").value =
+        state.subtitle;
+
+    $("watermark").value =
+        state.watermark;
+
+}
+
+
+/* =========================================================
+   AI PROMPT ENGINE
+========================================================= */
+
+$("makePromptBtn").addEventListener(
+    "click",
+    ()=>{
+
+        const idea =
+            $("videoIdea").value.trim();
+
+        if(!idea){
+
+            alert(
+                "Pehle apne video ka idea likho."
+            );
+
+            return;
+
         }
 
-        function loop() {
-            if((currentMode === 'video' && !sourceVideo.paused) || currentMode === 'image' || (facecamVideo.readyState >= 2 && !facecamVideo.paused)) {
-                renderFrame();
-                animationId = requestAnimationFrame(loop);
-            }
+        const prompt = buildPrompt(idea);
+
+        $("aiPrompt").value = prompt;
+
+        status("YouTube image prompt created");
+
+    }
+);
+
+
+function buildPrompt(idea){
+
+    let style =
+        "cinematic, highly detailed, professional YouTube visual, dramatic composition, strong subject separation, realistic lighting, rich colors, sharp details, volumetric lighting";
+
+    const lower =
+        idea.toLowerCase();
+
+    if(
+        lower.includes("gaming") ||
+        lower.includes("game")
+    ){
+
+        style =
+            "high-energy gaming thumbnail, dramatic action, dynamic perspective, neon lighting, intense atmosphere, sharp subject, cinematic contrast, professional YouTube thumbnail";
+
+    }
+
+    if(
+        lower.includes("bhakti") ||
+        lower.includes("krishna") ||
+        lower.includes("ram") ||
+        lower.includes("shiv") ||
+        lower.includes("temple")
+    ){
+
+        style =
+            "devotional Indian cinematic artwork, divine golden light, peaceful spiritual atmosphere, beautiful temple environment, warm saffron and gold tones, respectful sacred presentation, highly detailed";
+
+    }
+
+    if(
+        lower.includes("education") ||
+        lower.includes("study") ||
+        lower.includes("tutorial")
+    ){
+
+        style =
+            "clean modern educational YouTube visual, professional studio lighting, clear subject, premium presentation, blue and cyan accents, highly readable composition";
+
+    }
+
+    if(
+        lower.includes("vlog") ||
+        lower.includes("travel")
+    ){
+
+        style =
+            "premium travel vlog cinematography, natural light, vibrant colors, cinematic depth of field, realistic photography, beautiful composition";
+
+    }
+
+    return `
+Create a professional 16:9 YouTube visual based on this video idea:
+
+"${idea}"
+
+Visual direction:
+${style}.
+
+Composition:
+clear focal subject, strong foreground/background separation,
+space for title text, visually understandable at thumbnail size,
+professional creator aesthetic.
+
+Quality:
+photorealistic, 4K detail, crisp focus, polished color grading,
+no watermark, no random text, no distorted faces, no extra fingers.
+`;
+
+}
+
+
+/* =========================================================
+   POLLINATIONS IMAGE GENERATION
+========================================================= */
+
+$("generateImageBtn").addEventListener(
+    "click",
+    generateImage
+);
+
+
+async function generateImage(){
+
+    const prompt =
+        $("aiPrompt").value.trim();
+
+    if(!prompt){
+
+        alert(
+            "Generate a prompt first or write your own."
+        );
+
+        return;
+
+    }
+
+    const key =
+        $("apiKey").value.trim();
+
+    if(!key){
+
+        alert(
+            "Enter your Pollinations publishable/user-authorized API key first."
+        );
+
+        return;
+
+    }
+
+    showModal("Generating AI image...");
+
+    try{
+
+        const model =
+            $("imageModel").value;
+
+        const url =
+            "https://gen.pollinations.ai/image/" +
+            encodeURIComponent(prompt) +
+            "?model=" +
+            encodeURIComponent(model) +
+            "&width=" +
+            canvas.width +
+            "&height=" +
+            canvas.height +
+            "&key=" +
+            encodeURIComponent(key);
+
+        const response =
+            await fetch(url);
+
+        if(!response.ok){
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
         }
 
-        playBtn.addEventListener('click', () => {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            
-            const isPlaying = (currentMode === 'video' && !sourceVideo.paused) || (currentMode === 'image' && animationId);
-            
-            if(!isPlaying) {
-                if(currentMode === 'video') sourceVideo.play();
-                if(facecamVideo.readyState >= 2) facecamVideo.play();
-                playBtn.innerText = "Pause";
-                loop();
-            } else {
-                if(currentMode === 'video') sourceVideo.pause();
-                if(facecamVideo.readyState >= 2) facecamVideo.pause();
-                playBtn.innerText = "Play";
-                cancelAnimationFrame(animationId);
-                animationId = null;
+        const blob =
+            await response.blob();
+
+        const objectURL =
+            URL.createObjectURL(blob);
+
+        image = new Image();
+
+        image.onload = ()=>{
+
+            mode = "image";
+
+            duration = 5;
+
+            $("timelineRange").max =
+                duration;
+
+            $("emptyState").style.display =
+                "none";
+
+            render();
+
+            closeModal();
+
+            status(
+                "AI image generated successfully"
+            );
+
+            URL.revokeObjectURL(
+                objectURL
+            );
+
+        };
+
+        image.onerror = ()=>{
+
+            throw new Error(
+                "Generated image could not be loaded."
+            );
+
+        };
+
+        image.src = objectURL;
+
+    }catch(error){
+
+        console.error(error);
+
+        closeModal();
+
+        alert(
+            "AI generation failed.\n\n" +
+            error.message +
+            "\n\nCheck your API key and network connection."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   AI VIDEO GENERATION
+========================================================= */
+
+$("generateVideoBtn").addEventListener(
+    "click",
+    generateVideo
+);
+
+
+async function generateVideo(){
+
+    const prompt =
+        $("aiPrompt").value.trim();
+
+    const key =
+        $("apiKey").value.trim();
+
+    if(!prompt){
+
+        alert("Write or generate an AI prompt first.");
+
+        return;
+
+    }
+
+    if(!key){
+
+        alert(
+            "Enter your Pollinations API key first."
+        );
+
+        return;
+
+    }
+
+    showModal(
+        "Generating AI video...<br><br>" +
+        "Video generation can take significantly longer than image generation."
+    );
+
+    try{
+
+        const url =
+            "https://gen.pollinations.ai/video/" +
+            encodeURIComponent(prompt) +
+            "?model=google/veo-3.1-fast" +
+            "&duration=5" +
+            "&key=" +
+            encodeURIComponent(key);
+
+        const response =
+            await fetch(url);
+
+        if(!response.ok){
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
+
+        const contentType =
+            response.headers.get("content-type") || "";
+
+        let videoURL;
+
+        if(contentType.includes("video")){
+
+            const blob =
+                await response.blob();
+
+            videoURL =
+                URL.createObjectURL(blob);
+
+        }else{
+
+            const data =
+                await response.json();
+
+            videoURL =
+                data?.data?.[0]?.url ||
+                data?.url;
+
+            if(!videoURL){
+
+                throw new Error(
+                    "No video URL returned by the API."
+                );
+
             }
+
+        }
+
+        mode = "video";
+
+        sourceVideo.src = videoURL;
+
+        sourceVideo.load();
+
+        $("emptyState").style.display =
+            "none";
+
+        closeModal();
+
+        status(
+            "AI video loaded into editor"
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+        closeModal();
+
+        alert(
+            "AI video generation failed.\n\n" +
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+function showModal(html){
+
+    $("aiModalContent").innerHTML = html;
+
+    $("aiModal").classList.add("show");
+
+}
+
+function closeModal(){
+
+    $("aiModal").classList.remove("show");
+
+}
+
+$("closeModal").onclick =
+    closeModal;
+
+
+/* =========================================================
+   SNAPSHOT
+========================================================= */
+
+$("snapshotBtn").addEventListener(
+    "click",
+    ()=>{
+
+        if(mode === "none"){
+
+            status("Import or generate media first");
+
+            return;
+
+        }
+
+        render();
+
+        const link =
+            document.createElement("a");
+
+        link.download =
+            "CREATORCUT_YouTube_Thumbnail.png";
+
+        link.href =
+            canvas.toDataURL(
+                "image/png",
+                1
+            );
+
+        link.click();
+
+        status("Thumbnail downloaded");
+
+    }
+);
+
+
+/* =========================================================
+   VIDEO EXPORT
+========================================================= */
+
+$("exportBtn").addEventListener(
+    "click",
+    exportVideo
+);
+
+
+async function exportVideo(){
+
+    if(mode === "none"){
+
+        alert(
+            "Import or generate media first."
+        );
+
+        return;
+
+    }
+
+    if(!window.MediaRecorder){
+
+        alert(
+            "Your browser does not support MediaRecorder. Use Chrome or Edge."
+        );
+
+        return;
+
+    }
+
+    pauseEditor();
+
+    render();
+
+    const stream =
+        canvas.captureStream(30);
+
+    /*
+        Add source audio when possible.
+    */
+
+    if(
+        audioDestination &&
+        audioDestination.stream
+    ){
+
+        audioDestination.stream
+        .getAudioTracks()
+        .forEach(track=>{
+
+            stream.addTrack(track);
+
         });
 
-        scrubber.addEventListener('input', (e) => {
-            if(currentMode === 'video') {
-                sourceVideo.currentTime = e.target.value;
-                if(facecamVideo.readyState >= 2) facecamVideo.currentTime = e.target.value;
-                setTimeout(renderFrame, 30);
+    }
+
+
+    const mimeTypes = [
+
+        "video/webm;codecs=vp9,opus",
+        "video/webm;codecs=vp8,opus",
+        "video/webm"
+
+    ];
+
+    const mimeType =
+        mimeTypes.find(
+            type =>
+                MediaRecorder.isTypeSupported(type)
+        );
+
+    if(!mimeType){
+
+        alert(
+            "No supported WebM encoder was found."
+        );
+
+        return;
+
+    }
+
+
+    const recorder =
+        new MediaRecorder(
+            stream,
+            {
+                mimeType,
+                videoBitsPerSecond:8000000
             }
-        });
+        );
 
-        // Trigger updates on checkboxes & text
-        document.querySelectorAll('input[type="checkbox"], input[type="text"]').forEach(el => {
-            el.addEventListener('input', () => {
-                if((currentMode === 'video' && sourceVideo.paused) || currentMode === 'image') renderFrame();
-            });
-        });
 
-        document.getElementById('exportThumbBtn').addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = 'creatorCUT_Snapshot.jpg';
-            link.href = canvas.toDataURL('image/jpeg', 0.9);
-            link.click();
-        });
+    const chunks = [];
 
-        document.getElementById('exportBtn').addEventListener('click', () => {
-            alert("To export video, use screen recording on this preview window or implement the MediaRecorder blob logic from the previous snippet. Canvas is fully rendering everything!");
-        });
-    </script>
+    recorder.ondataavailable =
+        event=>{
+
+            if(event.data.size > 0){
+
+                chunks.push(event.data);
+
+            }
+
+        };
+
+
+    recorder.onstop = ()=>{
+
+        const blob =
+            new Blob(
+                chunks,
+                {type:mimeType}
+            );
+
+        const url =
+            URL.createObjectURL(blob);
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+
+        link.download =
+            "CREATORCUT_export.webm";
+
+        link.click();
+
+        setTimeout(
+            ()=>URL.revokeObjectURL(url),
+            10000
+        );
+
+        status(
+            "Video export complete"
+        );
+
+    };
+
+
+    status(
+        "Exporting video..."
+    );
+
+    recorder.start(1000);
+
+    /*
+        Image projects export for 5 seconds.
+        Video projects export the full source duration.
+    */
+
+    if(mode === "video"){
+
+        sourceVideo.currentTime = 0;
+
+        sourceVideo.playbackRate =
+            state.speed;
+
+        await sourceVideo.play();
+
+        if(facecamVideo.src){
+
+            facecamVideo.currentTime = 0;
+
+            facecamVideo.play()
+                .catch(()=>{});
+
+        }
+
+        const stopWhenFinished = ()=>{
+
+            if(
+                sourceVideo.currentTime >=
+                sourceVideo.duration - .05
+            ){
+
+                sourceVideo.removeEventListener(
+                    "timeupdate",
+                    stopWhenFinished
+                );
+
+                sourceVideo.pause();
+
+                if(facecamVideo.src)
+                    facecamVideo.pause();
+
+                recorder.stop();
+
+                isPlaying = false;
+
+                $("playBtn").textContent =
+                    "▶ Play";
+
+                cancelAnimationFrame(
+                    animationFrame
+                );
+
+            }
+
+        };
+
+        sourceVideo.addEventListener(
+            "timeupdate",
+            stopWhenFinished
+        );
+
+        renderLoop();
+
+    }else{
+
+        /*
+            Static image export duration.
+        */
+
+        let elapsed = 0;
+
+        const start =
+            performance.now();
+
+        function imageExportLoop(now){
+
+            elapsed =
+                (now-start)/1000;
+
+            render();
+
+            if(elapsed < 5){
+
+                requestAnimationFrame(
+                    imageExportLoop
+                );
+
+            }else{
+
+                recorder.stop();
+
+            }
+
+        }
+
+        requestAnimationFrame(
+            imageExportLoop
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SAVE PROJECT
+========================================================= */
+
+$("saveProjectBtn").addEventListener(
+    "click",
+    ()=>{
+
+        const project = {
+
+            app:"CREATORCUT",
+            version:1,
+
+            state,
+
+            rotation,
+            flipX
+
+        };
+
+        const blob =
+            new Blob(
+                [
+                    JSON.stringify(
+                        project,
+                        null,
+                        2
+                    )
+                ],
+                {
+                    type:"application/json"
+                }
+            );
+
+        const url =
+            URL.createObjectURL(blob);
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+
+        link.download =
+            "CREATORCUT_project.json";
+
+        link.click();
+
+        URL.revokeObjectURL(url);
+
+        status(
+            "Project settings saved"
+        );
+
+    }
+);
+
+
+/* =========================================================
+   LOAD PROJECT
+========================================================= */
+
+$("loadProjectInput")
+.addEventListener(
+    "change",
+    async e=>{
+
+        const file =
+            e.target.files[0];
+
+        if(!file) return;
+
+        try{
+
+            const text =
+                await file.text();
+
+            const project =
+                JSON.parse(text);
+
+            if(
+                project.app !==
+                "CREATORCUT"
+            ){
+
+                throw new Error(
+                    "Not a CREATORCUT project"
+                );
+
+            }
+
+            Object.assign(
+                state,
+                project.state
+            );
+
+            rotation =
+                project.rotation || 0;
+
+            flipX =
+                project.flipX || false;
+
+            syncControls();
+
+            render();
+
+            status(
+                "Project settings loaded"
+            );
+
+        }catch(error){
+
+            alert(
+                "Project load failed: " +
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   KEYBOARD SHORTCUTS
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    e=>{
+
+        /*
+            Don't steal keys while typing.
+        */
+
+        const tag =
+            document.activeElement.tagName;
+
+        if(
+            tag === "INPUT" ||
+            tag === "TEXTAREA" ||
+            tag === "SELECT"
+        ) return;
+
+
+        if(e.code === "Space"){
+
+            e.preventDefault();
+
+            $("playBtn").click();
+
+        }
+
+        if(e.key.toLowerCase() === "s"){
+
+            $("snapshotBtn").click();
+
+        }
+
+        if(e.key.toLowerCase() === "e"){
+
+            $("exportBtn").click();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SOURCE ENDED
+========================================================= */
+
+sourceVideo.addEventListener(
+    "ended",
+    ()=>{
+
+        isPlaying = false;
+
+        $("playBtn").textContent =
+            "▶ Play";
+
+        cancelAnimationFrame(
+            animationFrame
+        );
+
+    }
+);
+
+
+/* =========================================================
+   FACE CAM SYNC
+========================================================= */
+
+sourceVideo.addEventListener(
+    "timeupdate",
+    ()=>{
+
+        if(
+            facecamVideo.src &&
+            Math.abs(
+                facecamVideo.currentTime -
+                sourceVideo.currentTime
+            ) > .2
+        ){
+
+            try{
+
+                facecamVideo.currentTime =
+                    sourceVideo.currentTime;
+
+            }catch{}
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   GENERATION IDEA EXAMPLES
+========================================================= */
+
+$("videoIdea").addEventListener(
+    "keydown",
+    e=>{
+
+        if(
+            e.ctrlKey &&
+            e.key === "Enter"
+        ){
+
+            $("makePromptBtn").click();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   CLEAR PROMPT
+========================================================= */
+
+$("clearPromptBtn").onclick = ()=>{
+
+    $("videoIdea").value = "";
+    $("aiPrompt").value = "";
+
+};
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+setRatio("16:9");
+
+syncControls();
+
+render();
+
+status(
+    "CREATORCUT ready"
+);
+
+</script>
+
 </body>
 </html>
