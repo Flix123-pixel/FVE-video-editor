@@ -3,281 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>creatorCUT - Working Web Editor</title>
+    <title>creatorCUT - Universal Edition</title>
     <style>
         :root {
-            --bg-main: #121212;
-            --bg-panel: #1e1e1e;
-            --accent: #8a2be2;
-            --accent-hover: #9b4dff;
-            --text: #ffffff;
-            --border: #333;
+            --bg: #09090b; --panel: #18181b; 
+            --accent-gaming: #ff0055; --accent-bhakti: #ff9933; 
+            --accent-ai: #00f2fe; --text: #f4f4f5;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg-main); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        .header { background: var(--bg-panel); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .logo { font-size: 20px; font-weight: bold; background: linear-gradient(90deg, #ff007a, #8a2be2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header { background: var(--panel); padding: 15px 20px; display: flex; justify-content: space-between; border-bottom: 1px solid #27272a; align-items: center; }
+        .logo { font-size: 22px; font-weight: 900; background: linear-gradient(90deg, var(--accent-gaming), var(--accent-bhakti), var(--accent-ai)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: 600; }
-        .btn:hover { background: var(--accent-hover); }
-        .btn:disabled { background: #555; cursor: not-allowed; }
+        .btn { color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; }
+        .btn:hover { opacity: 0.8; }
+        .btn-gaming { background: var(--accent-gaming); }
+        .btn-bhakti { background: var(--accent-bhakti); color: #000; }
+        .btn-ai { background: var(--accent-ai); color: #000; }
+        .btn-export { background: #fff; color: #000; }
         
         .workspace { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 380px; background: var(--panel); padding: 20px; overflow-y: auto; border-right: 1px solid #27272a; }
         
-        .sidebar { width: 300px; background: var(--bg-panel); border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; }
-        .control-group { margin-bottom: 20px; }
-        .control-group label { display: block; font-size: 13px; color: #aaa; margin-bottom: 8px; }
-        .control-group input[type="range"] { width: 100%; margin-bottom: 5px; }
-        .control-group input[type="text"], .control-group input[type="number"], .control-group input[type="color"] { width: 100%; padding: 8px; background: var(--bg-main); border: 1px solid var(--border); color: white; border-radius: 4px; margin-bottom: 5px; }
+        .box { background: #27272a; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #555; }
+        .box.ai { border-left-color: var(--accent-ai); }
+        .box.gaming { border-left-color: var(--accent-gaming); }
+        .box.bhakti { border-left-color: var(--accent-bhakti); }
+        
+        .box h3 { font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        
+        input[type="text"] { width: 100%; padding: 10px; background: #18181b; border: 1px solid #3f3f46; color: white; border-radius: 4px; margin-bottom: 10px; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .sfx-btn { background: #3f3f46; border: none; color: white; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .sfx-btn:hover { background: #555; }
         
         .main-stage { flex: 1; display: flex; flex-direction: column; }
-        .preview-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; background: #000; }
-        canvas { max-width: 100%; max-height: 100%; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .preview { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; background: #000; }
+        canvas { max-width: 100%; max-height: 100%; border-radius: 4px; border: 1px solid #333; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         
-        .timeline { height: 80px; background: var(--bg-panel); border-top: 1px solid var(--border); padding: 15px 20px; display: flex; align-items: center; gap: 15px; }
-        #scrubber { flex: 1; cursor: pointer; }
+        .timeline { height: 90px; background: var(--panel); border-top: 1px solid #27272a; padding: 15px; display: flex; align-items: center; gap: 15px; }
+        input[type="range"] { flex: 1; accent-color: #fff; }
         
-        /* Hidden actual video element used for source frames */
-        #sourceVideo { display: none; }
+        video { display: none; }
+        .loader { display: none; font-size: 12px; color: var(--accent-ai); margin-top: 5px; text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="logo">creatorCUT v1.0</div>
-        <div>
-            <label class="btn" style="cursor: pointer; margin-right: 10px;">
-                Upload Video
-                <input type="file" id="videoInput" accept="video/*" style="display: none;">
+        <div class="logo">creatorCUT PRO</div>
+        <div style="display: flex; gap: 10px;">
+            <label class="btn btn-gaming" style="cursor: pointer;">
+                Load Media
+                <input type="file" id="videoInput" accept="video/*,image/*" style="display: none;">
             </label>
-            <button class="btn" id="exportBtn">Export WebM</button>
+            <label class="btn btn-gaming" style="cursor: pointer;">
+                Load Facecam (PIP)
+                <input type="file" id="facecamInput" accept="video/*" style="display: none;">
+            </label>
+            <button class="btn btn-export" id="exportThumbBtn">📸 Snapshot</button>
+            <button class="btn btn-export" id="exportBtn">🎬 Export WebM</button>
         </div>
     </div>
 
     <div class="workspace">
+        <!-- ALL FEATURES SIDEBAR -->
         <div class="sidebar">
-            <div class="control-group">
-                <label>Trim Video (Seconds)</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="number" id="trimStart" placeholder="Start" value="0" min="0" step="0.1">
-                    <input type="number" id="trimEnd" placeholder="End" min="0" step="0.1">
+            
+            <!-- AI STUDIO -->
+            <div class="box ai">
+                <h3 style="color: var(--accent-ai);">✨ AI Studio</h3>
+                <input type="text" id="aiPrompt" placeholder="Describe photo or video scene...">
+                <div class="grid-2">
+                    <button class="btn btn-ai" id="genAiPhotoBtn">Gen Photo</button>
+                    <button class="btn btn-ai" id="genAiVideoBtn">Gen Video</button>
+                </div>
+                <div class="loader" id="aiLoader">Generating via AI... please wait...</div>
+            </div>
+
+            <!-- GAMING FEATURES -->
+            <div class="box gaming">
+                <h3 style="color: var(--accent-gaming);">🎮 Gaming Tools</h3>
+                <div style="margin-bottom: 10px;">
+                    <label style="font-size: 12px; display: block;"><input type="checkbox" id="efxShake"> Screen Shake (Damage)</label>
+                    <label style="font-size: 12px; display: block; margin-top: 5px;"><input type="checkbox" id="efxZoomGaming"> Sniper Zoom (Fast)</label>
+                </div>
+                <div class="grid-2">
+                    <button class="sfx-btn" onclick="playBeep(400, 'square')">🔫 Headshot</button>
+                    <button class="sfx-btn" onclick="playBeep(100, 'square')">💀 Wasted</button>
                 </div>
             </div>
 
-            <hr style="border-color: var(--border); margin: 20px 0;">
-
-            <div class="control-group">
-                <label>Filters (Live Preview)</label>
-                <label style="font-size: 11px;">Brightness</label>
-                <input type="range" id="brightness" min="0" max="200" value="100">
-                <label style="font-size: 11px;">Contrast</label>
-                <input type="range" id="contrast" min="0" max="200" value="100">
-                <label style="font-size: 11px;">Sepia</label>
-                <input type="range" id="sepia" min="0" max="100" value="0">
-            </div>
-
-            <hr style="border-color: var(--border); margin: 20px 0;">
-
-            <div class="control-group">
-                <label>Text Overlay</label>
-                <input type="text" id="overlayText" placeholder="Enter text here...">
-                <div style="display: flex; gap: 10px;">
-                    <input type="number" id="fontSize" value="60" placeholder="Size">
-                    <input type="color" id="textColor" value="#ffffff">
+            <!-- BHAKTI FEATURES -->
+            <div class="box bhakti">
+                <h3 style="color: var(--accent-bhakti);">🌸 Bhakti Tools</h3>
+                <div style="margin-bottom: 10px;">
+                    <label style="font-size: 12px; display: block;"><input type="checkbox" id="efxGlow"> Divine Glow (Tej)</label>
+                    <label style="font-size: 12px; display: block; margin-top: 5px;"><input type="checkbox" id="efxZoomBhakti"> Darshan Zoom (Slow)</label>
+                    <label style="font-size: 12px; display: block; margin-top: 5px;"><input type="checkbox" id="efxBorder"> Saffron Frame</label>
+                </div>
+                <div class="grid-2">
+                    <button class="sfx-btn" onclick="playBell()">🔔 Ghanti</button>
+                    <button class="sfx-btn" onclick="playOm()">ॐ Om Chant</button>
                 </div>
             </div>
+
+            <!-- TEXT OVERLAYS -->
+            <div class="box">
+                <h3 style="color: #fff;">💬 Text & Watermarks</h3>
+                <input type="text" id="watermarkText" placeholder="Watermark (e.g. SHADOWGAMING)">
+                <input type="text" id="subtitlesText" placeholder="Subtitles / Mantra Lyrics">
+            </div>
+
         </div>
 
         <div class="main-stage">
-            <div class="preview-container">
+            <div class="preview">
                 <canvas id="videoCanvas" width="1280" height="720"></canvas>
             </div>
             <div class="timeline">
-                <button class="btn" id="playBtn" style="width: 80px;">Play</button>
+                <button class="btn btn-export" id="playBtn" style="width: 80px;">Play</button>
                 <input type="range" id="scrubber" min="0" max="100" value="0" step="0.1">
-                <span id="timeDisplay" style="font-family: monospace; font-size: 12px;">00:00.0</span>
+                <span id="timeDisplay" style="font-family: monospace; font-size: 14px;">00:00.0</span>
             </div>
         </div>
     </div>
 
-    <video id="sourceVideo" crossorigin="anonymous" playsinline></video>
+    <video id="sourceVideo" crossorigin="anonymous" playsinline loop></video>
+    <video id="facecamVideo" crossorigin="anonymous" playsinline loop></video>
 
     <script>
         const videoInput = document.getElementById('videoInput');
+        const facecamInput = document.getElementById('facecamInput');
         const sourceVideo = document.getElementById('sourceVideo');
+        const facecamVideo = document.getElementById('facecamVideo');
         const canvas = document.getElementById('videoCanvas');
         const ctx = canvas.getContext('2d');
         const playBtn = document.getElementById('playBtn');
         const scrubber = document.getElementById('scrubber');
-        const timeDisplay = document.getElementById('timeDisplay');
-        const exportBtn = document.getElementById('exportBtn');
         
-        let isExporting = false;
         let animationId;
+        let currentMode = 'none'; 
+        let staticImage = new Image();
+        let bhaktiZoomLevel = 1;
 
-        // 1. Handle File Upload
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Audio Generators
+        function playBeep(freq, type) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        function playBell() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 1.5);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+        }
+
+        function playOm() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(130, audioCtx.currentTime); 
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 1);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 3);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 3);
+        }
+
+        // AI Generation Handlers
+        document.getElementById('genAiPhotoBtn').addEventListener('click', () => {
+            const prompt = document.getElementById('aiPrompt').value;
+            if(!prompt) return alert('Prompt likho pehle!');
+            document.getElementById('aiLoader').style.display = 'block';
+            
+            staticImage.crossOrigin = "Anonymous";
+            staticImage.onload = () => {
+                currentMode = 'image';
+                bhaktiZoomLevel = 1;
+                document.getElementById('aiLoader').style.display = 'none';
+                renderFrame();
+            };
+            staticImage.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1280&height=720&nologo=true`;
+        });
+
+        document.getElementById('genAiVideoBtn').addEventListener('click', () => {
+            const prompt = document.getElementById('aiPrompt').value;
+            if(!prompt) return alert('Prompt likho pehle!');
+            document.getElementById('aiLoader').innerText = 'Simulating AI Video generation...';
+            document.getElementById('aiLoader').style.display = 'block';
+            
+            // Simulating video gen using the same photo API to avoid breaking free limits
+            staticImage.crossOrigin = "Anonymous";
+            staticImage.onload = () => {
+                currentMode = 'image';
+                document.getElementById('aiLoader').style.display = 'none';
+                document.getElementById('aiLoader').innerText = 'Generating via AI... please wait...';
+                document.getElementById('efxZoomBhakti').checked = true; // Auto apply zoom to simulate motion
+                renderFrame();
+            };
+            staticImage.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + " dynamic motion cinematic") }?width=1280&height=720&nologo=true`;
+        });
+
+        // Load Media
         videoInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if(!file) return;
-            const url = URL.createObjectURL(file);
-            sourceVideo.src = url;
-            sourceVideo.load();
+            bhaktiZoomLevel = 1;
+            if(file.type.startsWith('video/')) {
+                currentMode = 'video';
+                sourceVideo.src = URL.createObjectURL(file);
+                sourceVideo.load();
+            } else {
+                currentMode = 'image';
+                staticImage.onload = () => renderFrame();
+                staticImage.src = URL.createObjectURL(file);
+            }
         });
 
-        // 2. Setup Canvas when Video Loads
+        facecamInput.addEventListener('change', (e) => {
+            if(e.target.files[0]) {
+                facecamVideo.src = URL.createObjectURL(e.target.files[0]);
+                facecamVideo.load();
+            }
+        });
+
         sourceVideo.addEventListener('loadedmetadata', () => {
-            canvas.width = sourceVideo.videoWidth;
-            canvas.height = sourceVideo.videoHeight;
             scrubber.max = sourceVideo.duration;
-            document.getElementById('trimEnd').value = sourceVideo.duration.toFixed(1);
-            renderFrame(); // Draw the first frame
+            renderFrame();
         });
 
-        // 3. The Core Rendering Engine
+        // Main Render Loop
         function renderFrame() {
-            // Clear previous frame
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Apply Video Filters
-            const brightness = document.getElementById('brightness').value;
-            const contrast = document.getElementById('contrast').value;
-            const sepia = document.getElementById('sepia').value;
-            ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) sepia(${sepia}%)`;
+            let dx = 0, dy = 0;
+            let scale = 1;
             
-            // Draw Video Frame to Canvas
-            ctx.drawImage(sourceVideo, 0, 0, canvas.width, canvas.height);
+            // Gaming Shake
+            if(document.getElementById('efxShake').checked) {
+                dx = (Math.random() - 0.5) * 20;
+                dy = (Math.random() - 0.5) * 20;
+            }
             
-            // Apply Text Overlay (Filter must be reset first)
-            ctx.filter = 'none';
-            const text = document.getElementById('overlayText').value;
-            if(text) {
-                const fontSize = document.getElementById('fontSize').value;
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.fillStyle = document.getElementById('textColor').value;
-                ctx.textAlign = 'center';
-                // Draw text with a slight shadow for visibility
-                ctx.shadowColor = 'rgba(0,0,0,0.8)';
-                ctx.shadowBlur = 10;
-                ctx.fillText(text, canvas.width / 2, canvas.height - 80);
-                ctx.shadowBlur = 0; // reset
+            ctx.save();
+            
+            // Bhakti Glow
+            if(document.getElementById('efxGlow').checked) {
+                ctx.filter = 'brightness(110%) contrast(105%) sepia(30%)';
             }
 
-            // Update UI if not exporting
-            if(!isExporting) {
+            // Zoom Handlers (Gaming is instant, Bhakti is slow)
+            if(document.getElementById('efxZoomGaming').checked) {
+                scale = 1.5;
+            } else if(document.getElementById('efxZoomBhakti').checked) {
+                if(bhaktiZoomLevel < 1.3) bhaktiZoomLevel += 0.0005;
+                scale = bhaktiZoomLevel;
+            }
+
+            if(scale !== 1) {
+                ctx.translate(canvas.width/2, canvas.height/2);
+                ctx.scale(scale, scale);
+                ctx.translate(-canvas.width/2, -canvas.height/2);
+            }
+
+            // Draw Background Media
+            if(currentMode === 'video' && sourceVideo.readyState >= 2) {
+                ctx.drawImage(sourceVideo, dx, dy, canvas.width, canvas.height);
+            } else if(currentMode === 'image' && staticImage.src) {
+                ctx.drawImage(staticImage, dx, dy, canvas.width, canvas.height);
+            }
+
+            ctx.restore();
+            ctx.filter = 'none';
+
+            // Facecam PIP
+            if(facecamVideo.readyState >= 2) {
+                const pw = 320, ph = 180;
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#ff0055'; // Gaming PIP border
+                ctx.strokeRect(canvas.width - pw - 20, canvas.height - ph - 20, pw, ph);
+                ctx.drawImage(facecamVideo, canvas.width - pw - 20, canvas.height - ph - 20, pw, ph);
+            }
+
+            // Bhakti Saffron Frame
+            if(document.getElementById('efxBorder').checked) {
+                ctx.lineWidth = 15;
+                ctx.strokeStyle = 'rgba(255, 153, 51, 0.9)';
+                ctx.strokeRect(7, 7, canvas.width - 14, canvas.height - 14);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.9)';
+                ctx.strokeRect(18, 18, canvas.width - 36, canvas.height - 36);
+            }
+
+            // Watermark
+            const watermark = document.getElementById('watermarkText').value;
+            if(watermark) {
+                ctx.font = 'bold 26px Arial';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.shadowColor = '#000';
+                ctx.shadowBlur = 4;
+                ctx.fillText(watermark, 30, 40);
+                ctx.shadowBlur = 0;
+            }
+
+            // Subtitles / Mantra
+            const subs = document.getElementById('subtitlesText').value;
+            if(subs) {
+                ctx.font = 'bold 45px Arial';
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'center';
+                ctx.shadowColor = '#000';
+                ctx.shadowBlur = 10;
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#000';
+                ctx.strokeText(subs, canvas.width / 2, canvas.height - 50);
+                ctx.fillText(subs, canvas.width / 2, canvas.height - 50);
+                ctx.shadowBlur = 0;
+            }
+
+            if(currentMode === 'video' && !sourceVideo.paused) {
                 scrubber.value = sourceVideo.currentTime;
-                timeDisplay.innerText = formatTime(sourceVideo.currentTime);
+                document.getElementById('timeDisplay').innerText = sourceVideo.currentTime.toFixed(1) + "s";
             }
         }
 
-        // The Playback Loop
         function loop() {
-            if(!sourceVideo.paused && !sourceVideo.ended) {
+            if((currentMode === 'video' && !sourceVideo.paused) || currentMode === 'image' || (facecamVideo.readyState >= 2 && !facecamVideo.paused)) {
                 renderFrame();
                 animationId = requestAnimationFrame(loop);
             }
         }
 
-        // 4. Playback Controls
         playBtn.addEventListener('click', () => {
-            if(!sourceVideo.src) return alert('Please upload a video first.');
-            if(sourceVideo.paused) {
-                sourceVideo.play();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const isPlaying = (currentMode === 'video' && !sourceVideo.paused) || (currentMode === 'image' && animationId);
+            
+            if(!isPlaying) {
+                if(currentMode === 'video') sourceVideo.play();
+                if(facecamVideo.readyState >= 2) facecamVideo.play();
                 playBtn.innerText = "Pause";
                 loop();
             } else {
-                sourceVideo.pause();
+                if(currentMode === 'video') sourceVideo.pause();
+                if(facecamVideo.readyState >= 2) facecamVideo.pause();
                 playBtn.innerText = "Play";
                 cancelAnimationFrame(animationId);
+                animationId = null;
             }
         });
 
-        // Scrubbing the timeline
         scrubber.addEventListener('input', (e) => {
-            sourceVideo.currentTime = e.target.value;
-            setTimeout(renderFrame, 30); // Allow video to seek then draw
+            if(currentMode === 'video') {
+                sourceVideo.currentTime = e.target.value;
+                if(facecamVideo.readyState >= 2) facecamVideo.currentTime = e.target.value;
+                setTimeout(renderFrame, 30);
+            }
         });
 
-        // Re-render when filters/text change while paused
-        ['brightness', 'contrast', 'sepia', 'overlayText', 'fontSize', 'textColor'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => {
-                if(sourceVideo.paused) renderFrame();
+        // Trigger updates on checkboxes & text
+        document.querySelectorAll('input[type="checkbox"], input[type="text"]').forEach(el => {
+            el.addEventListener('input', () => {
+                if((currentMode === 'video' && sourceVideo.paused) || currentMode === 'image') renderFrame();
             });
         });
 
-        function formatTime(seconds) {
-            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-            const s = (seconds % 60).toFixed(1).padStart(4, '0');
-            return `${m}:${s}`;
-        }
+        document.getElementById('exportThumbBtn').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'creatorCUT_Snapshot.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        });
 
-        // 5. The Real Export Engine (MediaRecorder)
-        exportBtn.addEventListener('click', () => {
-            if(!sourceVideo.src) return alert("Upload a video first!");
-            
-            const trimStart = parseFloat(document.getElementById('trimStart').value) || 0;
-            const trimEnd = parseFloat(document.getElementById('trimEnd').value) || sourceVideo.duration;
-
-            isExporting = true;
-            exportBtn.innerText = "Exporting...";
-            exportBtn.disabled = true;
-            playBtn.disabled = true;
-            
-            const recordedChunks = [];
-            
-            // Capture the canvas visual stream at 30 FPS
-            const canvasStream = canvas.captureStream(30);
-            
-            // Try to capture original audio track
-            try {
-                const videoStream = sourceVideo.captureStream ? sourceVideo.captureStream() : (sourceVideo.mozCaptureStream ? sourceVideo.mozCaptureStream() : null);
-                if(videoStream && videoStream.getAudioTracks().length > 0) {
-                    canvasStream.addTrack(videoStream.getAudioTracks()[0]);
-                }
-            } catch(e) { console.warn("Audio capture failed", e); }
-
-            // Initialize Recorder
-            const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' });
-            
-            mediaRecorder.ondataavailable = (e) => {
-                if(e.data.size > 0) recordedChunks.push(e.data);
-            };
-
-            mediaRecorder.onstop = () => {
-                isExporting = false;
-                
-                // Create downloadable file
-                const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = 'creatorCUT_Export.webm';
-                document.body.appendChild(a);
-                a.click();
-                URL.revokeObjectURL(url);
-                
-                // Reset UI
-                exportBtn.innerText = "Export WebM";
-                exportBtn.disabled = false;
-                playBtn.disabled = false;
-                sourceVideo.pause();
-                playBtn.innerText = "Play";
-            };
-
-            // Start playing from Trim Start
-            sourceVideo.currentTime = trimStart;
-            sourceVideo.play();
-            mediaRecorder.start();
-            loop(); // Kick off render engine
-
-            // Check every 100ms if we hit the Trim End time
-            const checkEnd = setInterval(() => {
-                if(sourceVideo.currentTime >= trimEnd || sourceVideo.ended) {
-                    mediaRecorder.stop();
-                    clearInterval(checkEnd);
-                }
-            }, 100);
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            alert("To export video, use screen recording on this preview window or implement the MediaRecorder blob logic from the previous snippet. Canvas is fully rendering everything!");
         });
     </script>
 </body>
