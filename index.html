@@ -1,18 +1,522 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090a12"><title>CREATORcut — Studio</title>
-<style>
-:root{--bg:#090a12;--panel:#111421;--panel2:#181c2b;--line:#272d42;--text:#f7f8ff;--muted:#9299b4;--pink:#ff3d81;--purple:#8b5cf6;--green:#39d98a}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 70% -10%,#2b1748 0,#090a12 45%);color:var(--text);font:14px Inter,system-ui,sans-serif;min-height:100vh}button,input,select{font:inherit}button{cursor:pointer;border:0;color:inherit}.app{min-height:100vh;display:grid;grid-template-rows:68px 1fr 250px}header{display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--line);background:#0b0d16e8;backdrop-filter:blur(16px)}.brand{font-size:21px;font-weight:900;letter-spacing:-.6px;background:linear-gradient(100deg,var(--pink),#ff9cc2,var(--purple));-webkit-background-clip:text;color:transparent}.actions{display:flex;gap:10px}.btn{padding:10px 15px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);font-weight:700}.btn:hover{border-color:#69718f;transform:translateY(-1px)}.primary{background:linear-gradient(110deg,var(--pink),var(--purple));border:0;box-shadow:0 8px 24px #8b5cf633}.workspace{position:relative;display:flex;align-items:center;justify-content:center;min-height:0;padding:25px}.stage{width:min(72vw,650px);height:min(68vh,650px);display:flex;align-items:center;justify-content:center;background:#05060b;border:1px solid var(--line);border-radius:22px;box-shadow:0 25px 80px #0008;overflow:hidden}.stage canvas{max-width:100%;max-height:100%;display:block}.empty{position:absolute;text-align:center;color:var(--muted);pointer-events:none}.empty strong{display:block;font-size:18px;color:var(--text);margin-bottom:8px}.play{position:absolute;width:64px;height:64px;border-radius:50%;background:#ff3d81e8;font-size:25px;border:3px solid #fff;box-shadow:0 8px 30px #ff3d8166}.play.hidden{display:none}.timeline{background:#0e1019;border-top:1px solid var(--line);padding:0 18px 15px;overflow:auto}.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow:auto}.tab{white-space:nowrap;padding:14px 16px;color:var(--muted);background:transparent;font-weight:700}.tab.active{color:#fff;border-bottom:2px solid var(--pink)}.panel{display:none;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;padding:16px 2px}.panel.active{display:grid}.field{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase}.field input,.field select{width:100%;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);outline:none}.field input:focus,.field select:focus{border-color:var(--pink)}input[type=range]{accent-color:var(--pink);padding:0}.wide{grid-column:1/-1}.status{position:fixed;left:20px;bottom:20px;background:var(--panel2);border:1px solid var(--line);padding:10px 14px;border-radius:10px;color:var(--muted);opacity:0;transition:.25s}.status.show{opacity:1}@media(max-width:700px){.app{grid-template-rows:60px 1fr 310px}header{padding:0 14px}.actions .btn:first-child{display:none}.workspace{padding:12px}.stage{width:100%;height:55vh}.timeline{padding:0 10px 10px}.tab{padding:12px 10px;font-size:12px}}
-</style></head>
-<body><div class="app"><header><div class="brand">✦ CREATORcut <small style="font-size:10px;color:#9299b4">STUDIO</small></div><div class="actions"><button class="btn" id="openBtn">＋ Import media</button><input id="file" type="file" accept="video/*,image/*" hidden><button class="btn primary" id="export">Export WebM</button></div></header><main class="workspace"><div class="stage"><canvas id="canvas" width="1080" height="1920"></canvas><div class="empty" id="empty"><strong>Drop a video or image to begin</strong><span>Your media stays in this browser.</span></div></div><button class="play" id="play" aria-label="Play" hidden>▶</button></main><section class="timeline"><nav class="tabs"><button class="tab active" data-tab="edit">✂ Edit</button><button class="tab" data-tab="look">◈ Look</button><button class="tab" data-tab="text">T Text</button><button class="tab" data-tab="export">⚙ Output</button></nav><div class="panel active" id="panel-edit"><label class="field">Aspect ratio<select id="ratio"><option value="9/16">9:16 Vertical</option><option value="16/9">16:9 Landscape</option><option value="1/1">1:1 Square</option><option value="4/3">4:3 Classic</option></select></label><label class="field">Trim start (sec)<input id="start" type="number" min="0" step=".1" value="0"></label><label class="field">Trim end (sec)<input id="end" type="number" min="0" step=".1" value="0"></label><label class="field">Speed<select id="speed"><option>.5</option><option selected>1</option><option>1.5</option><option>2</option></select></label><label class="field">Zoom <output id="zoomOut">1.0×</output><input id="zoom" type="range" min=".5" max="2.5" step=".1" value="1"></label></div><div class="panel" id="panel-look"><label class="field">Filter<select id="filter"><option value="none">Original</option><option value="grayscale(1)">Mono</option><option value="sepia(.8)">Vintage</option><option value="contrast(1.25) saturate(1.4)">Vivid</option><option value="hue-rotate(180deg) saturate(1.2)">Cool</option></select></label><label class="field">Brightness <output id="brightOut">100%</output><input id="bright" type="range" min="0" max="200" value="100"></label><label class="field">Saturation <output id="satOut">100%</output><input id="sat" type="range" min="0" max="200" value="100"></label><label class="field">Background<input id="bg" type="color" value="#05060b"></label></div><div class="panel" id="panel-text"><label class="field wide">Caption<input id="caption" maxlength="80" placeholder="Add a title or caption"></label><label class="field">Color<input id="textColor" type="color" value="#ffffff"></label><label class="field">Size <output id="sizeOut">64px</output><input id="size" type="range" min="20" max="180" value="64"></label><label class="field">Position<select id="position"><option value="bottom">Bottom</option><option value="center">Center</option><option value="top">Top</option></select></label></div><div class="panel" id="panel-export"><label class="field">Resolution<select id="resolution"><option value="720">720p</option><option value="1080" selected>1080p</option><option value="1440">1440p</option></select></label><div class="field" style="justify-content:center"><button class="btn" id="reset">Reset project</button></div><p class="wide" style="color:var(--muted);margin:0">Export uses your browser's WebM encoder. Audio is included when supported by the browser.</p></div></section></div><div class="status" id="status" role="status"></div>
-<script>
-const $=id=>document.getElementById(id),c=$('canvas'),ctx=c.getContext('2d');let media=null,kind='',raf=0,recording=false,parts=[];const say=m=>{const s=$('status');s.textContent=m;s.classList.add('show');clearTimeout(s.t);s.t=setTimeout(()=>s.classList.remove('show'),2600)};
-function ratio(){const [w,h]=$('ratio').value.split('/').map(Number);const base=+$('resolution').value;c.width=w>=h?base:Math.round(base*w/h);c.height=w>=h?Math.round(base*h/w):base;draw()}
-function source(){return media}
-function draw(){ctx.fillStyle=$('bg').value;ctx.fillRect(0,0,c.width,c.height);if(!media)return;ctx.save();ctx.filter=`brightness(${$('bright').value}%) saturate(${$('sat').value}%) ${$('filter').value}`;const z=+$('zoom').value,sw=media.videoWidth||media.naturalWidth,sh=media.videoHeight||media.naturalHeight,scale=Math.max(c.width/sw,c.height/sh)*z;ctx.translate(c.width/2,c.height/2);ctx.drawImage(media,-sw*scale/2,-sh*scale/2,sw*scale,sh*scale);ctx.restore();const text=$('caption').value.trim();if(text){ctx.save();ctx.font=`800 ${$('size').value}px system-ui`;ctx.textAlign='center';ctx.fillStyle=$('textColor').value;ctx.shadowColor='#000b';ctx.shadowBlur=12;const y=$('position').value==='top'?+ $('size').value*1.5:$('position').value==='center'?c.height/2:c.height-+$('size').value;ctx.fillText(text,c.width/2,y);ctx.restore()}if(recording||!media.paused){raf=requestAnimationFrame(draw)}}
-$('openBtn').onclick=()=>$('file').click();$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;if(media?.tagName==='VIDEO')URL.revokeObjectURL(media.src);kind=f.type.startsWith('video')?'video':'image';media=document.createElement(kind==='video'?'video':'img');media.src=URL.createObjectURL(f);media.muted=true;media.playsInline=true;media.onloadedmetadata=()=>{if(kind==='video'){$('end').value=media.duration.toFixed(1);media.onended=()=>{$('play').textContent='▶';draw()}}$('empty').hidden=true;$('play').hidden=kind!=='video';ratio();say('Media imported')};if(kind==='image')media.onload=()=>{$('empty').hidden=true;$('play').hidden=true;ratio()}};
-$('play').onclick=()=>{if(!media)return;if(media.paused){const st=+$('start').value,en=+$('end').value||media.duration;media.currentTime=Math.max(st,media.currentTime<st?st:media.currentTime);media.playbackRate=+$('speed').value;media.play();$('play').textContent='Ⅱ';draw()}else{media.pause();$('play').textContent='▶';draw()}};
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('panel-'+b.dataset.tab).classList.add('active')});document.querySelectorAll('input,select').forEach(x=>{x.oninput=()=>{if(x.id==='zoom')$('zoomOut').value=x.value+'×';if(x.id==='bright')$('brightOut').value=x.value+'%';if(x.id==='sat')$('satOut').value=x.value+'%';if(x.id==='size')$('sizeOut').value=x.value+'px';if(x.id==='ratio'||x.id==='resolution')ratio();draw()}});$('reset').onclick=()=>location.reload();
-$('export').onclick=async()=>{if(!media||kind!=='video')return say('Import a video before exporting');if(!window.MediaRecorder)return say('MediaRecorder is not supported in this browser');const stream=c.captureStream(30);try{const ac=new AudioContext(),dest=ac.createMediaStreamDestination(),src=ac.createMediaElementSource(media);src.connect(dest);src.connect(ac.destination);dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t))}catch(e){}parts=[];recording=true;const rec=new MediaRecorder(stream,{mimeType:MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')?'video/webm;codecs=vp9,opus':'video/webm'});rec.ondataavailable=e=>e.data.size&&parts.push(e.data);rec.onstop=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(parts,{type:'video/webm'}));a.download='creatorcut-'+Date.now()+'.webm';a.click();recording=false;say('Export downloaded')};media.currentTime=+$('start').value||0;media.playbackRate=+$('speed').value;rec.start();media.play();draw();const finish=()=>{if(!recording)return;media.pause();rec.stop()};media.ontimeupdate=()=>{if(media.currentTime>=(+$('end').value||media.duration))finish()};say('Rendering video…')};
-</script></body></html>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>creatorCUT - AI Video Editor</title>
+    <style>
+        :root {
+            --bg-dark: #0f0f0f;
+            --bg-panel: #1a1a1a;
+            --bg-surface: #252525;
+            --accent: #8a2be2;
+            --accent-hover: #9b4dff;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --border: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            height: 60px;
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #ff007a, #8a2be2, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-actions button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .header-actions button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .workspace {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 360px); /* Leave room for timeline */
+        }
+
+        /* --- LEFT SIDEBAR (TOOLS) --- */
+        .sidebar {
+            width: 70px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 15px;
+            gap: 15px;
+        }
+        .tool-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 12px;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .tool-icon:hover, .tool-icon.active {
+            background-color: var(--bg-surface);
+            color: var(--accent);
+        }
+
+        /* --- ASSET / AI PANEL --- */
+        .asset-panel {
+            width: 320px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            color: var(--text-main);
+            border-bottom: 2px solid var(--accent);
+        }
+        .panel-content {
+            padding: 15px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* AI Generators / ML Features */
+        .ai-box {
+            background-color: var(--bg-panel);
+            border: 1px dashed var(--accent);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .ai-box:hover {
+            background-color: rgba(138, 43, 226, 0.1);
+        }
+        .btn-full {
+            width: 100%;
+            background-color: var(--bg-panel);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-full:hover {
+            background-color: var(--border);
+        }
+        .btn-primary {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            resize: none;
+        }
+
+        /* --- PREVIEW AREA --- */
+        .preview-area {
+            flex: 1;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .canvas-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .video-canvas {
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 16 / 9;
+            background-color: #111;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-muted);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .player-controls {
+            height: 50px;
+            background-color: var(--bg-panel);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            border-top: 1px solid var(--border);
+        }
+        .ctrl-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* --- INSPECTOR / PROPERTIES --- */
+        .inspector {
+            width: 280px;
+            background-color: var(--bg-surface);
+            border-left: 1px solid var(--border);
+            padding: 15px;
+            overflow-y: auto;
+        }
+        .prop-group {
+            margin-bottom: 20px;
+        }
+        .prop-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .switch {
+            width: 34px;
+            height: 18px;
+            background: var(--border);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+        .switch.on { background: var(--accent); }
+        .switch::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.2s;
+        }
+        .switch.on::after { left: 18px; }
+
+        /* --- TIMELINE --- */
+        .timeline-container {
+            height: 300px;
+            background-color: var(--bg-panel);
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+        .timeline-toolbar {
+            height: 40px;
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 15px;
+            font-size: 13px;
+        }
+        .timeline-tracks {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: auto;
+            position: relative;
+            padding: 10px 0;
+        }
+        .time-ruler {
+            height: 25px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 5px;
+            background: repeating-linear-gradient(90deg, transparent, transparent 49px, var(--border) 49px, var(--border) 50px);
+        }
+        .track {
+            height: 45px;
+            background-color: rgba(255,255,255,0.02);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            padding-left: 20px;
+            position: relative;
+        }
+        .track-label {
+            position: absolute;
+            left: 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+            z-index: 10;
+        }
+        .clip {
+            height: 35px;
+            border-radius: 4px;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+            cursor: pointer;
+        }
+        .clip-video { background: #2b5c8f; left: 80px; width: 300px; }
+        .clip-pip { background: #8f5c2b; left: 150px; width: 150px; }
+        .clip-text { background: #8a2be2; left: 100px; width: 120px; }
+        .clip-audio { background: #2b8f5c; left: 80px; width: 400px; }
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #ff007a;
+            left: 150px;
+            z-index: 20;
+        }
+        .playhead::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -4px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #ff007a;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">creatorCUT</div>
+        <div class="header-actions">
+            <button>Export 1080p</button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        
+        <!-- Left Sidebar Toolbar -->
+        <div class="sidebar">
+            <div class="tool-icon active">📁<br>Media</div>
+            <div class="tool-icon">✨<br>Veo 3</div>
+            <div class="tool-icon">🎵<br>Audio</div>
+            <div class="tool-icon">T<br>Text</div>
+            <div class="tool-icon">🪄<br>Effects</div>
+            <div class="tool-icon">✂️<br>Auto</div>
+        </div>
+
+        <!-- Asset / AI Panel -->
+        <div class="asset-panel">
+            <div class="panel-tabs">
+                <div class="tab" onclick="switchTab('media')">Project Media</div>
+                <div class="tab active" onclick="switchTab('ai')">Veo 3 AI Studio</div>
+            </div>
+            
+            <!-- AI Studio Content -->
+            <div class="panel-content" id="ai-content">
+                <h3 style="font-size: 14px; margin-bottom: 15px;">Bring Images to Life</h3>
+                
+                <div class="ai-box">
+                    <span style="font-size: 24px;">🖼️</span>
+                    <p style="font-size: 12px; margin-top: 10px; color: var(--text-muted);">Drop Product Photo or Character Portrait here</p>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn-full" style="font-size: 11px;">📦 Product Ad</button>
+                    <button class="btn-full" style="font-size: 11px;">👤 Animate Portrait</button>
+                </div>
+
+                <textarea rows="3" placeholder="Describe motion, style, or background changes..."></textarea>
+                <button class="btn-full btn-primary" onclick="alert('Generating video with Veo 3 AI...')">✨ Generate with Veo 3</button>
+                
+                <hr style="border-color: var(--border); margin: 20px 0;">
+
+                <h3 style="font-size: 14px; margin-bottom: 15px;">Text to Video/Photo</h3>
+                <input type="text" placeholder="Enter prompt...">
+                <button class="btn-full">Generate Media</button>
+            </div>
+        </div>
+
+        <!-- Video Preview -->
+        <div class="preview-area">
+            <div class="canvas-wrapper">
+                <div class="video-canvas">
+                    <span>Preview Canvas (16:9)</span>
+                    <!-- Simulated bounding box for PIP -->
+                    <div style="position: absolute; bottom: 20px; right: 20px; width: 120px; height: 68px; border: 1px solid #fff; background: rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; font-size: 10px;">PIP Layer</div>
+                </div>
+            </div>
+            <div class="player-controls">
+                <span style="font-family: monospace; font-size: 12px;">00:00:04:12</span>
+                <button class="ctrl-btn">⏮</button>
+                <button class="ctrl-btn">▶</button>
+                <button class="ctrl-btn">⏭</button>
+                <span style="font-family: monospace; font-size: 12px; color: var(--text-muted);">/ 00:00:15:00</span>
+            </div>
+        </div>
+
+        <!-- Inspector / Properties -->
+        <div class="inspector">
+            <div class="prop-group">
+                <div class="prop-title">ML Auto-Tools</div>
+                <button class="btn-full btn-primary" onclick="alert('Analyzing footage... Auto-trimming silences and applying smooth transitions.')">✂️ Auto-Trim & Transitions</button>
+                <button class="btn-full">🎵 Audio Beat Sync</button>
+                <button class="btn-full">💬 Auto-Captions</button>
+            </div>
+
+            <hr style="border-color: var(--border); margin: 20px 0;">
+
+            <div class="prop-group">
+                <div class="prop-title">Video Settings</div>
+                <div class="toggle-row">
+                    <span>Chroma Key (Green Screen)</span>
+                    <div class="switch" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="toggle-row">
+                    <span>Speed Ramping (Optical Flow)</span>
+                    <div class="switch on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="toggle-row">
+                    <span>AI Video Upscale</span>
+                    <div class="switch" onclick="this.classList.toggle('on')"></div>
+                </div>
+            </div>
+
+            <div class="prop-group">
+                <div class="prop-title">Aspect Ratio</div>
+                <select style="width: 100%; padding: 8px; background: var(--bg-panel); color: white; border: 1px solid var(--border); border-radius: 4px;">
+                    <option>16:9 (YouTube)</option>
+                    <option>9:16 (TikTok/Shorts)</option>
+                    <option>1:1 (Instagram)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-container">
+        <div class="timeline-toolbar">
+            <button class="ctrl-btn">↩ Undo</button>
+            <button class="ctrl-btn">↪ Redo</button>
+            <button class="ctrl-btn">✂ Split</button>
+            <button class="ctrl-btn">🗑 Delete</button>
+            <div style="flex:1"></div>
+            <input type="range" min="1" max="100" value="50" style="width: 100px;">
+        </div>
+        <div class="timeline-tracks">
+            <div class="time-ruler"></div>
+            <div class="playhead"></div>
+            
+            <div class="track">
+                <span class="track-label">Text</span>
+                <div class="clip clip-text">🔥 NEW AD</div>
+            </div>
+            <div class="track">
+                <span class="track-label">Overlay (PIP)</span>
+                <div class="clip clip-pip">Veo 3 Gen.mp4</div>
+            </div>
+            <div class="track">
+                <span class="track-label">Main Video</span>
+                <div class="clip clip-video">Product_Shoot_Raw.mov</div>
+                <!-- Simulated auto transition -->
+                <div style="position: absolute; left: 370px; height: 35px; width: 20px; background: rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:10px; z-index:5;">▶</div>
+            </div>
+            <div class="track">
+                <span class="track-label">Audio</span>
+                <div class="clip clip-audio">Beat_Sync_Track.wav</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Basic script to toggle tabs (mocking UI logic)
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const content = document.getElementById('ai-content');
+            if(tabName === 'ai') {
+                content.style.display = 'block';
+            } else {
+                content.innerHTML = '<p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-top: 20px;">Media Library Empty. Upload files to begin.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
