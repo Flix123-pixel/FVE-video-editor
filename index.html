@@ -3,520 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>creatorCUT - AI Video Editor</title>
+    <title>creatorCUT - Working Web Editor</title>
     <style>
         :root {
-            --bg-dark: #0f0f0f;
-            --bg-panel: #1a1a1a;
-            --bg-surface: #252525;
+            --bg-main: #121212;
+            --bg-panel: #1e1e1e;
             --accent: #8a2be2;
             --accent-hover: #9b4dff;
-            --text-main: #ffffff;
-            --text-muted: #a0a0a0;
-            --border: #333333;
+            --text: #ffffff;
+            --border: #333;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* --- HEADER --- */
-        .header {
-            height: 60px;
-            background-color: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-        .logo {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            background: linear-gradient(90deg, #ff007a, #8a2be2, #00f2fe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .header-actions button {
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            padding: 8px 24px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .header-actions button:hover {
-            background-color: var(--accent-hover);
-        }
-
-        /* --- MAIN LAYOUT --- */
-        .workspace {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 360px); /* Leave room for timeline */
-        }
-
-        /* --- LEFT SIDEBAR (TOOLS) --- */
-        .sidebar {
-            width: 70px;
-            background-color: var(--bg-panel);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 15px;
-            gap: 15px;
-        }
-        .tool-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 12px;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .tool-icon:hover, .tool-icon.active {
-            background-color: var(--bg-surface);
-            color: var(--accent);
-        }
-
-        /* --- ASSET / AI PANEL --- */
-        .asset-panel {
-            width: 320px;
-            background-color: var(--bg-surface);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
-        .panel-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border);
-        }
-        .tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-        }
-        .tab.active {
-            color: var(--text-main);
-            border-bottom: 2px solid var(--accent);
-        }
-        .panel-content {
-            padding: 15px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        /* AI Generators / ML Features */
-        .ai-box {
-            background-color: var(--bg-panel);
-            border: 1px dashed var(--accent);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 15px;
-            cursor: pointer;
-        }
-        .ai-box:hover {
-            background-color: rgba(138, 43, 226, 0.1);
-        }
-        .btn-full {
-            width: 100%;
-            background-color: var(--bg-panel);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            font-weight: 500;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-full:hover {
-            background-color: var(--border);
-        }
-        .btn-primary {
-            background-color: var(--accent);
-            border-color: var(--accent);
-        }
-        .btn-primary:hover {
-            background-color: var(--accent-hover);
-        }
-        textarea, input[type="text"] {
-            width: 100%;
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            resize: none;
-        }
-
-        /* --- PREVIEW AREA --- */
-        .preview-area {
-            flex: 1;
-            background-color: #000;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-        .canvas-wrapper {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .video-canvas {
-            width: 100%;
-            max-width: 600px;
-            aspect-ratio: 16 / 9;
-            background-color: #111;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-muted);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            position: relative;
-        }
-        .player-controls {
-            height: 50px;
-            background-color: var(--bg-panel);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            border-top: 1px solid var(--border);
-        }
-        .ctrl-btn {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        /* --- INSPECTOR / PROPERTIES --- */
-        .inspector {
-            width: 280px;
-            background-color: var(--bg-surface);
-            border-left: 1px solid var(--border);
-            padding: 15px;
-            overflow-y: auto;
-        }
-        .prop-group {
-            margin-bottom: 20px;
-        }
-        .prop-title {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-            letter-spacing: 0.5px;
-        }
-        .toggle-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        .switch {
-            width: 34px;
-            height: 18px;
-            background: var(--border);
-            border-radius: 10px;
-            position: relative;
-            cursor: pointer;
-        }
-        .switch.on { background: var(--accent); }
-        .switch::after {
-            content: '';
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: 0.2s;
-        }
-        .switch.on::after { left: 18px; }
-
-        /* --- TIMELINE --- */
-        .timeline-container {
-            height: 300px;
-            background-color: var(--bg-panel);
-            border-top: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
-        .timeline-toolbar {
-            height: 40px;
-            background-color: var(--bg-surface);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            gap: 15px;
-            font-size: 13px;
-        }
-        .timeline-tracks {
-            flex: 1;
-            overflow-x: auto;
-            overflow-y: auto;
-            position: relative;
-            padding: 10px 0;
-        }
-        .time-ruler {
-            height: 25px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 5px;
-            background: repeating-linear-gradient(90deg, transparent, transparent 49px, var(--border) 49px, var(--border) 50px);
-        }
-        .track {
-            height: 45px;
-            background-color: rgba(255,255,255,0.02);
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            padding-left: 20px;
-            position: relative;
-        }
-        .track-label {
-            position: absolute;
-            left: 10px;
-            font-size: 11px;
-            color: var(--text-muted);
-            z-index: 10;
-        }
-        .clip {
-            height: 35px;
-            border-radius: 4px;
-            position: absolute;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            font-size: 12px;
-            font-weight: 500;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
-            cursor: pointer;
-        }
-        .clip-video { background: #2b5c8f; left: 80px; width: 300px; }
-        .clip-pip { background: #8f5c2b; left: 150px; width: 150px; }
-        .clip-text { background: #8a2be2; left: 100px; width: 120px; }
-        .clip-audio { background: #2b8f5c; left: 80px; width: 400px; }
-        .playhead {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background-color: #ff007a;
-            left: 150px;
-            z-index: 20;
-        }
-        .playhead::before {
-            content: '';
-            position: absolute;
-            top: -5px;
-            left: -4px;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 5px solid #ff007a;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg-main); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        .header { background: var(--bg-panel); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .logo { font-size: 20px; font-weight: bold; background: linear-gradient(90deg, #ff007a, #8a2be2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        .btn:hover { background: var(--accent-hover); }
+        .btn:disabled { background: #555; cursor: not-allowed; }
+        
+        .workspace { display: flex; flex: 1; overflow: hidden; }
+        
+        .sidebar { width: 300px; background: var(--bg-panel); border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; }
+        .control-group { margin-bottom: 20px; }
+        .control-group label { display: block; font-size: 13px; color: #aaa; margin-bottom: 8px; }
+        .control-group input[type="range"] { width: 100%; margin-bottom: 5px; }
+        .control-group input[type="text"], .control-group input[type="number"], .control-group input[type="color"] { width: 100%; padding: 8px; background: var(--bg-main); border: 1px solid var(--border); color: white; border-radius: 4px; margin-bottom: 5px; }
+        
+        .main-stage { flex: 1; display: flex; flex-direction: column; }
+        .preview-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; background: #000; }
+        canvas { max-width: 100%; max-height: 100%; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        
+        .timeline { height: 80px; background: var(--bg-panel); border-top: 1px solid var(--border); padding: 15px 20px; display: flex; align-items: center; gap: 15px; }
+        #scrubber { flex: 1; cursor: pointer; }
+        
+        /* Hidden actual video element used for source frames */
+        #sourceVideo { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">creatorCUT</div>
-        <div class="header-actions">
-            <button>Export 1080p</button>
+    <div class="header">
+        <div class="logo">creatorCUT v1.0</div>
+        <div>
+            <label class="btn" style="cursor: pointer; margin-right: 10px;">
+                Upload Video
+                <input type="file" id="videoInput" accept="video/*" style="display: none;">
+            </label>
+            <button class="btn" id="exportBtn">Export WebM</button>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Workspace -->
     <div class="workspace">
-        
-        <!-- Left Sidebar Toolbar -->
         <div class="sidebar">
-            <div class="tool-icon active">📁<br>Media</div>
-            <div class="tool-icon">✨<br>Veo 3</div>
-            <div class="tool-icon">🎵<br>Audio</div>
-            <div class="tool-icon">T<br>Text</div>
-            <div class="tool-icon">🪄<br>Effects</div>
-            <div class="tool-icon">✂️<br>Auto</div>
-        </div>
-
-        <!-- Asset / AI Panel -->
-        <div class="asset-panel">
-            <div class="panel-tabs">
-                <div class="tab" onclick="switchTab('media')">Project Media</div>
-                <div class="tab active" onclick="switchTab('ai')">Veo 3 AI Studio</div>
-            </div>
-            
-            <!-- AI Studio Content -->
-            <div class="panel-content" id="ai-content">
-                <h3 style="font-size: 14px; margin-bottom: 15px;">Bring Images to Life</h3>
-                
-                <div class="ai-box">
-                    <span style="font-size: 24px;">🖼️</span>
-                    <p style="font-size: 12px; margin-top: 10px; color: var(--text-muted);">Drop Product Photo or Character Portrait here</p>
+            <div class="control-group">
+                <label>Trim Video (Seconds)</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="trimStart" placeholder="Start" value="0" min="0" step="0.1">
+                    <input type="number" id="trimEnd" placeholder="End" min="0" step="0.1">
                 </div>
-
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <button class="btn-full" style="font-size: 11px;">📦 Product Ad</button>
-                    <button class="btn-full" style="font-size: 11px;">👤 Animate Portrait</button>
-                </div>
-
-                <textarea rows="3" placeholder="Describe motion, style, or background changes..."></textarea>
-                <button class="btn-full btn-primary" onclick="alert('Generating video with Veo 3 AI...')">✨ Generate with Veo 3</button>
-                
-                <hr style="border-color: var(--border); margin: 20px 0;">
-
-                <h3 style="font-size: 14px; margin-bottom: 15px;">Text to Video/Photo</h3>
-                <input type="text" placeholder="Enter prompt...">
-                <button class="btn-full">Generate Media</button>
-            </div>
-        </div>
-
-        <!-- Video Preview -->
-        <div class="preview-area">
-            <div class="canvas-wrapper">
-                <div class="video-canvas">
-                    <span>Preview Canvas (16:9)</span>
-                    <!-- Simulated bounding box for PIP -->
-                    <div style="position: absolute; bottom: 20px; right: 20px; width: 120px; height: 68px; border: 1px solid #fff; background: rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; font-size: 10px;">PIP Layer</div>
-                </div>
-            </div>
-            <div class="player-controls">
-                <span style="font-family: monospace; font-size: 12px;">00:00:04:12</span>
-                <button class="ctrl-btn">⏮</button>
-                <button class="ctrl-btn">▶</button>
-                <button class="ctrl-btn">⏭</button>
-                <span style="font-family: monospace; font-size: 12px; color: var(--text-muted);">/ 00:00:15:00</span>
-            </div>
-        </div>
-
-        <!-- Inspector / Properties -->
-        <div class="inspector">
-            <div class="prop-group">
-                <div class="prop-title">ML Auto-Tools</div>
-                <button class="btn-full btn-primary" onclick="alert('Analyzing footage... Auto-trimming silences and applying smooth transitions.')">✂️ Auto-Trim & Transitions</button>
-                <button class="btn-full">🎵 Audio Beat Sync</button>
-                <button class="btn-full">💬 Auto-Captions</button>
             </div>
 
             <hr style="border-color: var(--border); margin: 20px 0;">
 
-            <div class="prop-group">
-                <div class="prop-title">Video Settings</div>
-                <div class="toggle-row">
-                    <span>Chroma Key (Green Screen)</span>
-                    <div class="switch" onclick="this.classList.toggle('on')"></div>
-                </div>
-                <div class="toggle-row">
-                    <span>Speed Ramping (Optical Flow)</span>
-                    <div class="switch on" onclick="this.classList.toggle('on')"></div>
-                </div>
-                <div class="toggle-row">
-                    <span>AI Video Upscale</span>
-                    <div class="switch" onclick="this.classList.toggle('on')"></div>
-                </div>
+            <div class="control-group">
+                <label>Filters (Live Preview)</label>
+                <label style="font-size: 11px;">Brightness</label>
+                <input type="range" id="brightness" min="0" max="200" value="100">
+                <label style="font-size: 11px;">Contrast</label>
+                <input type="range" id="contrast" min="0" max="200" value="100">
+                <label style="font-size: 11px;">Sepia</label>
+                <input type="range" id="sepia" min="0" max="100" value="0">
             </div>
 
-            <div class="prop-group">
-                <div class="prop-title">Aspect Ratio</div>
-                <select style="width: 100%; padding: 8px; background: var(--bg-panel); color: white; border: 1px solid var(--border); border-radius: 4px;">
-                    <option>16:9 (YouTube)</option>
-                    <option>9:16 (TikTok/Shorts)</option>
-                    <option>1:1 (Instagram)</option>
-                </select>
+            <hr style="border-color: var(--border); margin: 20px 0;">
+
+            <div class="control-group">
+                <label>Text Overlay</label>
+                <input type="text" id="overlayText" placeholder="Enter text here...">
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="fontSize" value="60" placeholder="Size">
+                    <input type="color" id="textColor" value="#ffffff">
+                </div>
+            </div>
+        </div>
+
+        <div class="main-stage">
+            <div class="preview-container">
+                <canvas id="videoCanvas" width="1280" height="720"></canvas>
+            </div>
+            <div class="timeline">
+                <button class="btn" id="playBtn" style="width: 80px;">Play</button>
+                <input type="range" id="scrubber" min="0" max="100" value="0" step="0.1">
+                <span id="timeDisplay" style="font-family: monospace; font-size: 12px;">00:00.0</span>
             </div>
         </div>
     </div>
 
-    <!-- Timeline -->
-    <div class="timeline-container">
-        <div class="timeline-toolbar">
-            <button class="ctrl-btn">↩ Undo</button>
-            <button class="ctrl-btn">↪ Redo</button>
-            <button class="ctrl-btn">✂ Split</button>
-            <button class="ctrl-btn">🗑 Delete</button>
-            <div style="flex:1"></div>
-            <input type="range" min="1" max="100" value="50" style="width: 100px;">
-        </div>
-        <div class="timeline-tracks">
-            <div class="time-ruler"></div>
-            <div class="playhead"></div>
-            
-            <div class="track">
-                <span class="track-label">Text</span>
-                <div class="clip clip-text">🔥 NEW AD</div>
-            </div>
-            <div class="track">
-                <span class="track-label">Overlay (PIP)</span>
-                <div class="clip clip-pip">Veo 3 Gen.mp4</div>
-            </div>
-            <div class="track">
-                <span class="track-label">Main Video</span>
-                <div class="clip clip-video">Product_Shoot_Raw.mov</div>
-                <!-- Simulated auto transition -->
-                <div style="position: absolute; left: 370px; height: 35px; width: 20px; background: rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:10px; z-index:5;">▶</div>
-            </div>
-            <div class="track">
-                <span class="track-label">Audio</span>
-                <div class="clip clip-audio">Beat_Sync_Track.wav</div>
-            </div>
-        </div>
-    </div>
+    <video id="sourceVideo" crossorigin="anonymous" playsinline></video>
 
     <script>
-        // Basic script to toggle tabs (mocking UI logic)
-        function switchTab(tabName) {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
+        const videoInput = document.getElementById('videoInput');
+        const sourceVideo = document.getElementById('sourceVideo');
+        const canvas = document.getElementById('videoCanvas');
+        const ctx = canvas.getContext('2d');
+        const playBtn = document.getElementById('playBtn');
+        const scrubber = document.getElementById('scrubber');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const exportBtn = document.getElementById('exportBtn');
+        
+        let isExporting = false;
+        let animationId;
+
+        // 1. Handle File Upload
+        videoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const url = URL.createObjectURL(file);
+            sourceVideo.src = url;
+            sourceVideo.load();
+        });
+
+        // 2. Setup Canvas when Video Loads
+        sourceVideo.addEventListener('loadedmetadata', () => {
+            canvas.width = sourceVideo.videoWidth;
+            canvas.height = sourceVideo.videoHeight;
+            scrubber.max = sourceVideo.duration;
+            document.getElementById('trimEnd').value = sourceVideo.duration.toFixed(1);
+            renderFrame(); // Draw the first frame
+        });
+
+        // 3. The Core Rendering Engine
+        function renderFrame() {
+            // Clear previous frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const content = document.getElementById('ai-content');
-            if(tabName === 'ai') {
-                content.style.display = 'block';
-            } else {
-                content.innerHTML = '<p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-top: 20px;">Media Library Empty. Upload files to begin.</p>';
+            // Apply Video Filters
+            const brightness = document.getElementById('brightness').value;
+            const contrast = document.getElementById('contrast').value;
+            const sepia = document.getElementById('sepia').value;
+            ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) sepia(${sepia}%)`;
+            
+            // Draw Video Frame to Canvas
+            ctx.drawImage(sourceVideo, 0, 0, canvas.width, canvas.height);
+            
+            // Apply Text Overlay (Filter must be reset first)
+            ctx.filter = 'none';
+            const text = document.getElementById('overlayText').value;
+            if(text) {
+                const fontSize = document.getElementById('fontSize').value;
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.fillStyle = document.getElementById('textColor').value;
+                ctx.textAlign = 'center';
+                // Draw text with a slight shadow for visibility
+                ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                ctx.shadowBlur = 10;
+                ctx.fillText(text, canvas.width / 2, canvas.height - 80);
+                ctx.shadowBlur = 0; // reset
+            }
+
+            // Update UI if not exporting
+            if(!isExporting) {
+                scrubber.value = sourceVideo.currentTime;
+                timeDisplay.innerText = formatTime(sourceVideo.currentTime);
             }
         }
+
+        // The Playback Loop
+        function loop() {
+            if(!sourceVideo.paused && !sourceVideo.ended) {
+                renderFrame();
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+
+        // 4. Playback Controls
+        playBtn.addEventListener('click', () => {
+            if(!sourceVideo.src) return alert('Please upload a video first.');
+            if(sourceVideo.paused) {
+                sourceVideo.play();
+                playBtn.innerText = "Pause";
+                loop();
+            } else {
+                sourceVideo.pause();
+                playBtn.innerText = "Play";
+                cancelAnimationFrame(animationId);
+            }
+        });
+
+        // Scrubbing the timeline
+        scrubber.addEventListener('input', (e) => {
+            sourceVideo.currentTime = e.target.value;
+            setTimeout(renderFrame, 30); // Allow video to seek then draw
+        });
+
+        // Re-render when filters/text change while paused
+        ['brightness', 'contrast', 'sepia', 'overlayText', 'fontSize', 'textColor'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                if(sourceVideo.paused) renderFrame();
+            });
+        });
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toFixed(1).padStart(4, '0');
+            return `${m}:${s}`;
+        }
+
+        // 5. The Real Export Engine (MediaRecorder)
+        exportBtn.addEventListener('click', () => {
+            if(!sourceVideo.src) return alert("Upload a video first!");
+            
+            const trimStart = parseFloat(document.getElementById('trimStart').value) || 0;
+            const trimEnd = parseFloat(document.getElementById('trimEnd').value) || sourceVideo.duration;
+
+            isExporting = true;
+            exportBtn.innerText = "Exporting...";
+            exportBtn.disabled = true;
+            playBtn.disabled = true;
+            
+            const recordedChunks = [];
+            
+            // Capture the canvas visual stream at 30 FPS
+            const canvasStream = canvas.captureStream(30);
+            
+            // Try to capture original audio track
+            try {
+                const videoStream = sourceVideo.captureStream ? sourceVideo.captureStream() : (sourceVideo.mozCaptureStream ? sourceVideo.mozCaptureStream() : null);
+                if(videoStream && videoStream.getAudioTracks().length > 0) {
+                    canvasStream.addTrack(videoStream.getAudioTracks()[0]);
+                }
+            } catch(e) { console.warn("Audio capture failed", e); }
+
+            // Initialize Recorder
+            const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' });
+            
+            mediaRecorder.ondataavailable = (e) => {
+                if(e.data.size > 0) recordedChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                isExporting = false;
+                
+                // Create downloadable file
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'creatorCUT_Export.webm';
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                // Reset UI
+                exportBtn.innerText = "Export WebM";
+                exportBtn.disabled = false;
+                playBtn.disabled = false;
+                sourceVideo.pause();
+                playBtn.innerText = "Play";
+            };
+
+            // Start playing from Trim Start
+            sourceVideo.currentTime = trimStart;
+            sourceVideo.play();
+            mediaRecorder.start();
+            loop(); // Kick off render engine
+
+            // Check every 100ms if we hit the Trim End time
+            const checkEnd = setInterval(() => {
+                if(sourceVideo.currentTime >= trimEnd || sourceVideo.ended) {
+                    mediaRecorder.stop();
+                    clearInterval(checkEnd);
+                }
+            }, 100);
+        });
     </script>
 </body>
 </html>
